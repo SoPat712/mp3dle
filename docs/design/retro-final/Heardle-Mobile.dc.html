@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Heardle mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&amp;display=swap">
+<style>
+body{margin:0}
+.root{--wall:#1f3561;--face:#c0c0c0;--hi:#fff;--lite:#dfdfdf;--shade:#808080;--dark:#404040;--w-text:#000;--field:#fff;--field-alt:#f3f5f8;--p-top:#fbfbfc;--p-mid:#eceef1;--p-bot:#dadde2;--p-edge:#8b9099;--p-text:#1b1e23;--p-muted:#565b63;--deck:#15171a;--deck-edge:#2a2d33;--lcd:#57e24d;--lcd-dim:#4fbf45;--unlock:#e6e23a;--blue:#127fb3;--select:#0f6e9c;--pink:#c43a84;--good:#1f7a4f;--bad:#b3261e;width:390px;height:844px;box-sizing:border-box;display:flex;flex-direction:column;position:relative;overflow:hidden;background:var(--wall);font:13px Tahoma,Verdana,'DejaVu Sans',sans-serif;color:var(--w-text)}
+.root.dark{--wall:#10192e;--face:#3c3f46;--hi:#6b707a;--lite:#50545c;--shade:#24262b;--dark:#0e0f12;--w-text:#fff;--field:#1b1d21;--field-alt:#24272d;--p-top:#3a3f49;--p-mid:#2e3239;--p-bot:#24272d;--p-edge:#0e1013;--p-text:#eef0f3;--p-muted:#b4bac4;--deck:#0c0d0f;--blue:#3aa3d8;--pink:#d9579d;--good:#57e24d;--bad:#ff8a80}
+button,input{font:inherit;color:inherit}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin 1.8s linear infinite}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+.w95{background:var(--face);border:2px solid;border-color:var(--hi) var(--dark) var(--dark) var(--hi);box-shadow:inset 1px 1px 0 var(--lite),inset -1px -1px 0 var(--shade);padding:2px;color:var(--w-text)}
+.sunk{border:2px solid;border-color:var(--shade) var(--hi) var(--hi) var(--shade);background:var(--field)}
+.b95{min-height:44px;padding:0 10px;background:var(--face);border:2px solid;border-color:var(--hi) var(--dark) var(--dark) var(--hi);box-shadow:inset -1px -1px 0 var(--shade);font-size:13px;color:var(--w-text)}
+.b95:active,.b95.on{border-color:var(--dark) var(--hi) var(--hi) var(--dark);box-shadow:inset 1px 1px 0 var(--shade);font-weight:bold}
+.tb{min-height:34px;display:flex;align-items:center;gap:6px;padding:0 3px 0 8px;background:linear-gradient(90deg,#0b4f75,#127fb3 60%,#2a95cc);font-weight:bold;font-size:13px;color:#fff}
+.tbx{width:44px;height:30px;padding:0;background:var(--face);border:2px solid;border-color:var(--hi) var(--dark) var(--dark) var(--hi);font:bold 12px Tahoma,sans-serif;color:var(--w-text)}
+.ap{background:linear-gradient(180deg,var(--p-top) 0,var(--p-mid) 40%,var(--p-bot) 100%);color:var(--p-text)}
+.rw{width:44px;height:44px;padding:0;background:none;border:0;display:flex;align-items:center;justify-content:center}
+.rnd{width:28px;height:28px;border-radius:50%;border:1px solid #2b2f36;background:radial-gradient(circle at 50% 30%,#8a9099,#3b4048 60%,#22262c);color:#fff;font:bold 13px Tahoma,sans-serif;display:flex;align-items:center;justify-content:center}
+.deck{background:var(--deck);border:1px solid var(--deck-edge);box-shadow:inset 0 1px 4px #000;border-radius:3px}
+.bul{width:14px;height:14px;border-radius:50%;flex-shrink:0;background:radial-gradient(circle at 40% 30%,#bfe7fb,#3aa3d8 45%,#0c5f8b);border:1px solid #084465}
+.sq{min-height:44px;padding:0 12px;border:1px solid var(--p-edge);border-radius:3px;background:linear-gradient(180deg,#fff 0,#eef0f3 48%,#d5d9df 52%,#c5c9d0 100%);font-weight:bold;font-size:13px;color:#1b1e23}
+.sq:active{background:#c5c9d0}
+.sq:disabled{color:#7b8089;opacity:.65}
+.play{flex-shrink:0;padding:0 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1px solid #05324a;border-radius:3px;background:linear-gradient(180deg,#8fd3f5 0,#3aa3d8 48%,#127fb3 52%,#0c5f8b 100%);box-shadow:inset 0 1px 0 rgb(255 255 255 / 45%),0 2px 0 #05324a;color:#fff;font:bold 13px Tahoma,sans-serif;text-shadow:0 1px 0 #05324a}
+.play:active{transform:translateY(2px);box-shadow:inset 0 1px 0 rgb(255 255 255 / 25%)}
+.gp{min-height:44px;padding:0 16px;border:1px solid #5a0f37;border-radius:3px;background:linear-gradient(180deg,#f6a8d2 0,#d9579d 48%,#c43a84 52%,#93245f 100%);color:#fff;font-weight:bold;font-size:13px;text-shadow:0 1px 0 #5a0f37}
+.fld{height:44px;width:100%;box-sizing:border-box;border:1px solid var(--p-edge);border-radius:3px;background:var(--field);color:var(--p-text);box-shadow:inset 0 1px 2px rgb(0 0 0 / 15%);padding:0 8px;font-size:16px}
+.tr{display:grid;grid-template-columns:22px minmax(0,1fr) 42px 58px;align-items:center;min-height:30px;padding:0 7px;column-gap:6px;font-size:13px}
+.tr.alt{background:var(--field-alt)}.tr.cur{background:var(--select);color:#fff}.tr.mut{color:var(--p-muted)}
+.th{min-height:24px;background:linear-gradient(180deg,#fafbfc,#dfe2e6);border-bottom:1px solid #a9aeb6;font-size:12px;color:#3b4048}
+.sg{width:100%;min-height:44px;padding:0 10px;border:0;background:var(--field);color:var(--p-text);text-align:left;font-size:14px}
+.sg.on{background:var(--select);color:#fff}
+.lk{color:var(--blue);text-decoration:underline}
+.mi{width:100%;min-height:46px;padding:0 12px;display:flex;align-items:center;gap:10px;border:0;background:none;text-align:left;font-size:14px;color:var(--w-text)}
+input[type=range]{accent-color:#c43a84}
+::placeholder{color:#6d737c}
+</style>
+</helmet>
+<div class="root {{ themeClass }}">
+  <main style="flex: 1; min-height: 0; display: flex; flex-direction: column; position: relative">
+
+    <sc-if value="{{ isPlayer }}" hint-placeholder-val="{{ true }}">
+      <section class="ap" aria-label="Heardle Player" style="flex: 1; min-height: 0; box-sizing: border-box; padding: 6px 10px 6px; display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: center; gap: 8px; min-height: 44px">
+          <svg aria-hidden="true" width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="14" fill="#14171b"></circle><circle cx="15" cy="15" r="9" fill="none" stroke="#3a3f47"></circle><circle cx="15" cy="15" r="5" fill="#c43a84"></circle><circle cx="15" cy="15" r="1.5" fill="#fff"></circle></svg>
+          <div style="display: flex; flex-direction: column; line-height: 0.95">
+            <span style="font: italic 900 21px 'Arial Black', Arial, sans-serif; letter-spacing: -0.5px">HEARDLE</span>
+            <span style="font: bold 10px Arial, sans-serif; color: var(--blue); letter-spacing: 3px">PLAYER 2.1</span>
+          </div>
+          <span style="flex: 1"></span>
+          <button type="button" class="rw" aria-label="How to play" onClick="{{ openReadme }}"><span class="rnd">?</span></button>
+          <button type="button" class="rw" aria-label="Open stats" onClick="{{ openStats }}"><span class="rnd"><svg aria-hidden="true" width="14" height="12" viewBox="0 0 14 12"><path d="M2 12V6M7 12V1M12 12V4" stroke="#fff" stroke-width="2.5"></path></svg></span></button>
+        </div>
+
+        <div class="deck" style="display: flex; gap: 8px; padding: 8px; flex-shrink: 0">
+          <div aria-hidden="true" style="width: 120px; height: 108px; flex-shrink: 0; position: relative; border: 1px solid #5f646c; border-radius: 3px; background: repeating-linear-gradient(0deg, rgb(255 255 255 / 30%) 0 1px, rgb(0 0 0 / 4%) 1px 2px, transparent 2px 3px), linear-gradient(180deg, #e8eaed, #b4b9c0); box-shadow: inset 0 1px 0 #fff">
+            <div style="position: absolute; left: 2px; top: 1px; width: 106px; height: 106px; border-radius: 50%; background: #8b9099; box-shadow: inset 0 1px 0 #d7dbe0, 0 1px 2px rgb(0 0 0 / 45%)"></div>
+            <div class="{{ spinClass }}" style="position: absolute; left: 5px; top: 4px; width: 100px; height: 100px; border-radius: 50%; background: conic-gradient(rgb(255 255 255 / 0) 0 30deg, rgb(255 255 255 / 20%) 52deg, rgb(255 255 255 / 0) 76deg 210deg, rgb(255 255 255 / 16%) 232deg, rgb(255 255 255 / 0) 256deg), repeating-radial-gradient(circle, #33373d 0 1px, #101114 1px 3px)">
+              <div style="position: absolute; inset: 34px; border-radius: 50%; background: #c43a84; color: #fff; display: flex; align-items: center; justify-content: center; font: bold 12px Arial, sans-serif">{{ labelText }}</div>
+              <div style="position: absolute; left: 48px; top: 48px; width: 4px; height: 4px; border-radius: 50%; background: #d7dbe0"></div>
+            </div>
+            <svg width="44" height="104" viewBox="0 0 44 104" style="position: absolute; right: 0; top: 0; transition: transform 300ms; transform-origin: 31px 12px; transform: rotate({{ armAngle }}deg)"><circle cx="31" cy="12" r="8" fill="#5f646c" stroke="#22262c"></circle><circle cx="31" cy="12" r="3" fill="#15171a"></circle><path d="M31 12 L34 62 L16 84" fill="none" stroke="#22262c" stroke-width="5" stroke-linecap="round"></path><path d="M31 12 L34 62 L16 84" fill="none" stroke="#e8eaed" stroke-width="2" stroke-linecap="round"></path></svg>
+          </div>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 3px">
+            <div style="display: flex; align-items: baseline; gap: 6px; font-family: 'VT323', monospace; white-space: nowrap">
+              <span style="font-size: 44px; line-height: 0.85; color: var(--lcd)">{{ timeNow }}</span>
+              <span style="font-size: 21px; color: var(--lcd-dim)">/{{ timeEnd }}</span>
+            </div>
+            <div style="font: 19px/1 'VT323', monospace; color: var(--lcd-dim)">{{ modeLine }} · {{ tryLine }}</div>
+            <div style="font-size: 12px; color: #d7dbe0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ artist.name }}, {{ songNote }}</div>
+            <sc-if value="{{ notOver }}" hint-placeholder-val="{{ true }}">
+              <div role="img" aria-label="{{ clipAria }}" style="height: 12px; display: flex; gap: 2px">
+                <sc-for list="{{ segs }}" as="s" hint-placeholder-count="6"><span style="flex: {{ s.flex }}; background: {{ s.bg }}"></span></sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ over }}" hint-placeholder-val="{{ false }}">
+              <div><label for="m-seek" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Seek through the full song</label><input id="m-seek" type="range" min="0" max="222000" step="1000" value="{{ elapsed }}" onChange="{{ onSeek }}" style="width: 100%; height: 24px; margin: 0"></div>
+            </sc-if>
+          </div>
+        </div>
+
+        <sc-if value="{{ notOver }}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 8px; flex-shrink: 0">
+            <div style="display: flex; align-items: center; gap: 8px">
+              <span class="bul"></span>
+              <span style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"><strong>{{ artist.name }}</strong>, {{ artist.tracks }} tracks</span>
+              <button type="button" class="sq" onClick="{{ openFind }}">Change...</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px; position: relative; z-index: 3">
+              <label for="m-guess" style="display: flex; align-items: center; gap: 8px"><span class="bul"></span>Your guess</label>
+              <input id="m-guess" class="fld" type="text" autocomplete="off" placeholder="Start typing a title" value="{{ input }}" onChange="{{ onInput }}" onKeyDown="{{ onKey }}">
+              <sc-if value="{{ hasSuggestions }}" hint-placeholder-val="{{ false }}">
+                <ul aria-label="Song suggestions" style="position: absolute; left: 0; right: 0; bottom: 46px; z-index: 6; margin: 0; padding: 0; list-style: none; border: 1px solid var(--p-edge); background: var(--field); box-shadow: 2px -2px 0 rgb(0 0 0 / 25%)">
+                  <sc-for list="{{ suggestions }}" as="g" hint-placeholder-count="3"><li><button type="button" class="sg {{ g.cls }}" onClick="{{ g.pick }}">{{ g.title }}</button></li></sc-for>
+                </ul>
+              </sc-if>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px">
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+                <button type="button" class="gp" onClick="{{ guess }}">Guess</button>
+                <button type="button" class="sq" onClick="{{ skip }}">{{ skipText }}</button>
+              </div>
+              <button type="button" class="play" aria-label="{{ playLabel }}" onClick="{{ togglePlay }}" style="width: 118px; align-self: stretch; min-height: 94px">
+                <sc-if value="{{ playing }}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" width="20" height="22" viewBox="0 0 20 22"><path d="M4 3h4v16H4zM12 3h4v16h-4z" fill="#fff" stroke="#05324a"></path></svg></sc-if>
+                <sc-if value="{{ notPlaying }}" hint-placeholder-val="{{ true }}"><svg aria-hidden="true" width="20" height="22" viewBox="0 0 20 22"><path d="M4 2 L18 11 L4 20 Z" fill="#fff" stroke="#05324a"></path></svg></sc-if>
+                <span>{{ playCaption }}</span>
+              </button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ over }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 8px; flex-shrink: 0">
+            <div style="display: flex; gap: 10px; align-items: flex-start">
+              <div aria-hidden="true" style="width: 84px; height: 84px; flex-shrink: 0; position: relative; background: #127fb3; border: 1px solid #084465; box-shadow: 2px 2px 0 rgb(0 0 0 / 25%); color: #fff; overflow: hidden">
+                <span style="position: absolute; right: -24px; top: 16px; width: 52px; height: 52px; border-radius: 50%; background: repeating-radial-gradient(circle, #24272c 0 1px, #08090a 1px 3px)"></span>
+                <span style="position: absolute; left: 6px; bottom: 5px; font: italic 900 12px/1 'Arial Black', Arial, sans-serif">{{ artist.ini }}</span>
+              </div>
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+                <strong style="color: {{ resultColor }}">{{ resultLabel }}</strong>
+                <span style="font: italic 900 19px/1.05 'Arial Black', Arial, sans-serif">{{ answer }}</span>
+                <span>{{ resultMessage }} <a href="#" class="lk">Open song links</a></span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center">
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+                <button type="button" class="gp" onClick="{{ playAnother }}">Play another</button>
+                <button type="button" class="sq" onClick="{{ share }}">Share result</button>
+                <sc-if value="{{ practice }}" hint-placeholder-val="{{ false }}"><button type="button" class="sq" onClick="{{ backToDaily }}">Daily puzzle</button></sc-if>
+              </div>
+              <button type="button" class="play" aria-label="{{ playLabel }}" onClick="{{ togglePlay }}" style="width: 118px; align-self: stretch; min-height: 94px">
+                <sc-if value="{{ playing }}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" width="20" height="22" viewBox="0 0 20 22"><path d="M4 3h4v16H4zM12 3h4v16h-4z" fill="#fff" stroke="#05324a"></path></svg></sc-if>
+                <sc-if value="{{ notPlaying }}" hint-placeholder-val="{{ true }}"><svg aria-hidden="true" width="20" height="22" viewBox="0 0 20 22"><path d="M4 2 L18 11 L4 20 Z" fill="#fff" stroke="#05324a"></path></svg></sc-if>
+                <span>{{ playCaption }}</span>
+              </button>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="flex: 1; min-height: 0; overflow-y: auto; border: 1px solid var(--p-edge); background: var(--field)">
+          <div class="tr th"><span>#</span><span>Guess</span><span>Clip</span><span>Result</span></div>
+          <ol aria-label="Your guesses" style="margin: 0; padding: 0; list-style: none">
+            <sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+              <li class="tr {{ r.cls }}"><span>{{ r.n }}</span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ r.guess }}</span><span>{{ r.clip }}</span><span style="font-weight: bold; color: {{ r.color }}">{{ r.result }}</span></li>
+            </sc-for>
+          </ol>
+        </div>
+        <div style="font-size: 12px; color: var(--p-muted)" aria-live="polite">{{ status }}</div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ isStats }}" hint-placeholder-val="{{ false }}">
+      <section class="w95" aria-label="Stats" style="flex: 1; min-height: 0; overflow-y: auto">
+        <div class="tb"><span style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">stats.xls - {{ artist.name }}</span><button type="button" class="tbx" aria-label="Close stats" onClick="{{ openPlayer }}">x</button></div>
+        <div style="padding: 10px; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; text-align: center; font-size: 12px">
+            <div class="sunk" style="padding: 8px 0"><div style="font-size: 22px; font-weight: bold">{{ stats.played }}</div>played</div>
+            <div class="sunk" style="padding: 8px 0"><div style="font-size: 22px; font-weight: bold">{{ stats.winPct }}</div>won</div>
+            <div class="sunk" style="padding: 8px 0"><div style="font-size: 22px; font-weight: bold">{{ stats.streak }}</div>streak</div>
+            <div class="sunk" style="padding: 8px 0"><div style="font-size: 22px; font-weight: bold">{{ stats.max }}</div>best</div>
+          </div>
+          <div class="sunk" style="padding: 10px; display: flex; flex-direction: column; gap: 6px">
+            <strong>Guess distribution</strong>
+            <sc-for list="{{ stats.dist }}" as="d" hint-placeholder-count="7">
+              <div style="display: flex; align-items: center; gap: 8px"><span style="width: 12px">{{ d.label }}</span><span style="flex: 1"><span style="display: block; height: 18px; min-width: 3px; width: {{ d.w }}; background: {{ d.color }}"></span></span><span style="width: 18px; text-align: right">{{ d.n }}</span></div>
+            </sc-for>
+          </div>
+          <p style="margin: 0">{{ nextLine }}</p>
+          <a href="#" class="lk">Open SoundCloud profile</a>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ isReadme }}" hint-placeholder-val="{{ false }}">
+      <section class="w95" aria-label="How to play" style="flex: 1; min-height: 0; display: flex; flex-direction: column">
+        <div class="tb"><span style="flex: 1">readme.txt - Notepad</span><button type="button" class="tbx" aria-label="Close readme" onClick="{{ openPlayer }}">x</button></div>
+        <div class="sunk" style="flex: 1; min-height: 0; overflow-y: auto; padding: 10px; font: 14px/1.5 'Lucida Console', Consolas, monospace; color: var(--w-text)">
+          <p style="margin: 0">HOW TO PLAY</p>
+          <p style="margin: 10px 0 0">1. Press play and identify the song from the unlocked snippet.</p>
+          <p style="margin: 6px 0 0">2. A skip or wrong guess unlocks a longer clip from the start.</p>
+          <p style="margin: 6px 0 0">3. Finish in as few attempts as possible and share your result.</p>
+          <p style="margin: 14px 0 0">Your progress, settings, selected artist, and stats stay in this browser. No analytics, accounts, or cross-day identifier are used. Artist metadata and audio load from SoundCloud.</p>
+          <p style="margin: 14px 0 0">Catalog: {{ artist.tracks }} cleaned tracks</p>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ isFind }}" hint-placeholder-val="{{ false }}">
+      <section class="w95" aria-label="Find Artist" style="flex: 1; min-height: 0; display: flex; flex-direction: column">
+        <div class="tb"><span style="flex: 1">Find Artist</span><sc-if value="{{ hasArtist }}" hint-placeholder-val="{{ true }}"><button type="button" class="tbx" aria-label="Close Find Artist" onClick="{{ openPlayer }}">x</button></sc-if></div>
+        <div style="flex: 1; min-height: 0; padding: 10px; display: flex; flex-direction: column; gap: 8px">
+          <p style="margin: 0">Pick any public artist on SoundCloud. Each day you get one of their original tracks to name from a short clip, and every miss plays a little more.</p>
+          <label for="m-q">Artist or profile name:</label>
+          <div style="display: flex; gap: 6px">
+            <input id="m-q" class="sunk" type="text" value="{{ query }}" onChange="{{ onQuery }}" onKeyDown="{{ onQueryKey }}" style="flex: 1; min-width: 0; height: 44px; box-sizing: border-box; padding: 0 8px; font-size: 16px; color: var(--w-text)">
+            <button type="button" class="b95" onClick="{{ search }}">Search</button>
+          </div>
+          <div class="sunk" style="flex: 1; min-height: 0; overflow-y: auto">
+            <sc-for list="{{ results }}" as="a" hint-placeholder-count="3">
+              <button type="button" class="mi" style="min-height: 60px" onClick="{{ a.choose }}">
+                <span aria-hidden="true" style="width: 40px; height: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: {{ a.color }}; color: #fff; font-weight: bold">{{ a.ini }}</span>
+                <span style="flex: 1; min-width: 0; font-size: 12px"><strong style="display: block; font-size: 14px">{{ a.name }}</strong>@{{ a.handle }} · {{ a.tracks }} tracks · {{ a.followers }} followers</span>
+              </button>
+            </sc-for>
+            <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}"><p style="margin: 10px">{{ searchNote }}</p></sc-if>
+          </div>
+          <p style="margin: 0; font-size: 12px">Tip: follower and upload counts help identify the official profile.</p>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ startOpen }}" hint-placeholder-val="{{ false }}">
+      <div class="w95" style="position: absolute; left: 3px; bottom: 0; z-index: 30; width: 260px; display: flex">
+        <div aria-hidden="true" style="width: 28px; background: linear-gradient(0deg, #0b4f75, #127fb3); color: #fff; writing-mode: vertical-rl; transform: rotate(180deg); padding: 8px 0; font: italic 900 18px 'Arial Black', Arial, sans-serif">Heardle</div>
+        <div style="flex: 1; min-width: 0">
+          <button type="button" class="mi" onClick="{{ openFind }}">Find Artist...</button>
+          <button type="button" class="mi" onClick="{{ doPractice }}">practice.exe</button>
+          <button type="button" class="mi" onClick="{{ toggleVol }}">Volume</button>
+          <sc-if value="{{ volOpen }}" hint-placeholder-val="{{ false }}"><div style="padding: 0 12px 8px"><label for="m-vol" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Volume</label><input id="m-vol" type="range" min="0" max="100" value="{{ vol }}" onChange="{{ onVol }}" style="width: 100%"></div></sc-if>
+          <button type="button" class="mi" onClick="{{ toggleDark }}">Display: {{ themeName }}</button>
+          <div aria-hidden="true" style="margin: 3px 2px; border-top: 1px solid var(--shade); border-bottom: 1px solid var(--hi)"></div>
+          <a href="#" class="mi" style="text-decoration: none">Open SoundCloud profile</a>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasModal }}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; z-index: 40; padding: 12px; box-sizing: border-box; display: flex; align-items: center; justify-content: center">
+        <section class="w95" role="dialog" aria-modal="true" aria-label="{{ modal.title }}" style="width: 100%">
+          <div class="tb"><span style="flex: 1">{{ modal.title }}</span></div>
+          <div style="padding: 12px; display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; gap: 10px; align-items: flex-start">
+              <sc-if value="{{ modal.isError }}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34" style="flex-shrink: 0"><circle cx="17" cy="17" r="15" fill="#c9342f" stroke="#6b1512"></circle><path d="M11 11l12 12M23 11L11 23" stroke="#fff" stroke-width="4"></path></svg></sc-if>
+              <sc-if value="{{ modal.isInfo }}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34" style="flex-shrink: 0"><circle cx="17" cy="17" r="15" fill="#fff" stroke="#0b4f75" stroke-width="2"></circle><path d="M17 15v11M17 9v3" stroke="#0b4f75" stroke-width="4"></path></svg></sc-if>
+              <p style="margin: 0; flex: 1; min-width: 0">{{ modal.text }}</p>
+            </div>
+            <sc-if value="{{ modal.isLoading }}" hint-placeholder-val="{{ false }}">
+              <div class="sunk" style="height: 22px; padding: 2px; display: flex; gap: 2px; box-sizing: border-box" role="img" aria-label="Loading">
+                <sc-for list="{{ modal.blocks }}" as="b" hint-placeholder-count="20"><span style="flex: 1; background: {{ b.bg }}"></span></sc-for>
+              </div>
+            </sc-if>
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <sc-for list="{{ modal.buttons }}" as="m" hint-placeholder-count="1"><button type="button" class="b95" onClick="{{ m.act }}">{{ m.text }}</button></sc-for>
+            </div>
+          </div>
+        </section>
+      </div>
+    </sc-if>
+  </main>
+
+  <footer class="w95" style="height: 50px; box-sizing: border-box; flex-shrink: 0; display: flex; align-items: center; gap: 3px; border-left: 0; border-right: 0; border-bottom: 0; position: relative; z-index: 50">
+    <button type="button" class="b95 {{ startCls }}" onClick="{{ toggleStart }}" style="padding: 0 7px; display: flex; align-items: center; gap: 5px; font-weight: bold"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="8" fill="#111"></circle><circle cx="9" cy="9" r="3" fill="#c43a84"></circle></svg>Start</button>
+    <button type="button" class="b95 {{ tabPlayer }}" onClick="{{ openPlayer }}" style="flex: 1; min-width: 0; padding: 0 3px">Player</button>
+    <button type="button" class="b95 {{ tabStats }}" onClick="{{ openStats }}" style="flex: 1; min-width: 0; padding: 0 3px">Stats</button>
+    <button type="button" class="b95 {{ tabReadme }}" onClick="{{ openReadme }}" style="flex: 1; min-width: 0; padding: 0 3px">Help</button>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"screen":{"editor":"enum","options":["playing","won","lost","pick","stats","error"],"default":"playing"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  LIMITS = [1, 2, 4, 7, 11, 16];
+  SONGS = ['Moonwalk Static', 'Moonwards (Tape 4)', 'Glasshouse', 'Paper Lanterns', 'Low Tide Radio', 'Kitchen Light', 'Sunday Engine', 'Nine Volt', 'Porchlight', 'Ghost Station', 'Mothballs', 'Long Division'];
+  ARTISTS = [
+    { name: 'moth fields', handle: 'mothfields', tracks: 84, followers: '12,402', ini: 'MF', color: '#0f6e9c' },
+    { name: 'moth fields archive', handle: 'mothfields-vault', tracks: 19, followers: '860', ini: 'MA', color: '#c43a84' },
+    { name: 'mothra', handle: 'mothra-beats', tracks: 212, followers: '3,118', ini: 'MO', color: '#33373d' }
+  ];
+  state = {
+    app: 'player', hasArtist: true, startOpen: false, volOpen: false, vol: 70, dark: false,
+    artist: this.ARTISTS[0], target: 'Moonwalk Static', practice: false,
+    attempts: [{ status: 'skip' }, { status: 'wrong', title: 'Glasshouse' }], over: false, won: false,
+    input: '', picked: null, sugOpen: false, sugIdx: 0, playing: false, elapsed: 0, status: 'Ready',
+    query: '', results: [], searched: false, modal: null, loadPct: 0, loadArtist: null, daily: null,
+    played: 21, wins: 16, streak: 4, max: 9, dist: [2, 4, 6, 3, 1, 0]
+  };
+  componentDidMount() {
+    this.applyScreen(this.props.screen ?? 'playing');
+    this.tick = setInterval(() => this.forceUpdate(), 1000);
+  }
+  componentDidUpdate(prev) {
+    if (prev.screen !== this.props.screen) this.applyScreen(this.props.screen ?? 'playing');
+  }
+  componentWillUnmount() {
+    clearInterval(this.tick);
+    clearInterval(this.timer);
+    clearInterval(this.loader);
+  }
+  applyScreen(screen) {
+    this.stop();
+    const six = [{ status: 'skip' }, { status: 'wrong', title: 'Glasshouse' }, { status: 'wrong', title: 'Porchlight' }, { status: 'skip' }, { status: 'wrong', title: 'Long Division' }, { status: 'wrong', title: 'Nine Volt' }];
+    const base = { app: 'player', hasArtist: true, modal: null, over: false, won: false, input: '', picked: null, elapsed: 0, practice: false, status: 'Ready', target: 'Moonwalk Static', artist: this.ARTISTS[0], attempts: [{ status: 'skip' }, { status: 'wrong', title: 'Glasshouse' }] };
+    if (screen === 'won') this.setState({ ...base, attempts: [{ status: 'skip' }, { status: 'wrong', title: 'Glasshouse' }, { status: 'correct', title: 'Moonwalk Static' }], over: true, won: true });
+    else if (screen === 'lost') this.setState({ ...base, attempts: six, over: true });
+    else if (screen === 'pick') this.setState({ ...base, app: 'find', hasArtist: false, attempts: [], query: 'moth', results: this.ARTISTS, searched: true });
+    else if (screen === 'stats') this.setState({ ...base, app: 'stats' });
+    else this.setState({ ...base, modal: screen === 'error' ? 'cantplay' : null });
+  }
+  openApp = (app) => { this.setState({ app, startOpen: false }); };
+  limit() { return this.state.over ? 222000 : this.LIMITS[Math.min(this.state.attempts.length, 5)] * 1000; }
+  stop() {
+    clearInterval(this.timer);
+    this.timer = null;
+    this.setState({ playing: false });
+  }
+  togglePlay = () => {
+    if (this.state.playing) { this.stop(); this.setState({ status: 'Paused' }); return; }
+    const start = this.state.elapsed >= this.limit() ? 0 : this.state.elapsed;
+    this.setState({ playing: true, elapsed: start, status: this.state.over ? 'Playing the full song...' : 'Playing clip ' + (this.state.attempts.length + 1) + '...' });
+    clearInterval(this.timer);
+    this.timer = setInterval(() => {
+      const next = this.state.elapsed + 100;
+      if (next >= this.limit()) { this.stop(); this.setState({ elapsed: 0, status: 'Clip finished. Guess or skip.' }); }
+      else this.setState({ elapsed: next });
+    }, 100);
+  };
+  finish(attempts, won) {
+    this.stop();
+    const s = this.state;
+    const update = { attempts, over: true, won, input: '', picked: null, elapsed: 0, sugOpen: false, status: won ? 'Solved.' : 'Out of tries.' };
+    if (!s.practice) {
+      const dist = [...s.dist];
+      if (won) dist[attempts.length - 1] += 1;
+      const streak = won ? s.streak + 1 : 0;
+      Object.assign(update, { played: s.played + 1, wins: s.wins + (won ? 1 : 0), streak, max: Math.max(s.max, streak), dist });
+    }
+    this.setState(update);
+  }
+  advance(attempt) {
+    const attempts = [...this.state.attempts, attempt];
+    if (attempt.status === 'correct') return this.finish(attempts, true);
+    if (attempts.length >= 6) return this.finish(attempts, false);
+    this.stop();
+    this.setState({ attempts, input: '', picked: null, elapsed: 0, sugOpen: false, status: attempt.status === 'skip' ? 'Skipped. Longer clip unlocked.' : 'Not that one. Longer clip unlocked.' });
+  }
+  matches() {
+    const q = this.state.input.trim().toLowerCase();
+    if (!q || this.state.picked) return [];
+    return this.SONGS.filter((t) => t.toLowerCase().includes(q)).slice(0, 4);
+  }
+  guess = () => {
+    const s = this.state;
+    const title = s.picked ?? this.SONGS.find((t) => t.toLowerCase() === s.input.trim().toLowerCase()) ?? this.matches()[s.sugIdx];
+    if (!title) { this.setState({ status: 'Pick a song from the list first.' }); return; }
+    this.advance(title === s.target ? { status: 'correct', title } : { status: 'wrong', title });
+  };
+  newRound(extra) {
+    this.stop();
+    this.setState({ app: 'player', attempts: [], over: false, won: false, input: '', picked: null, elapsed: 0, sugOpen: false, status: 'Ready', ...extra });
+  }
+  doPractice = () => {
+    this.setState({ startOpen: false });
+    const s = this.state;
+    if (!s.over && !s.practice) { this.setState({ modal: 'finish' }); return; }
+    const daily = s.practice ? s.daily : { attempts: s.attempts, won: s.won, target: s.target };
+    const pool = this.SONGS.filter((t) => t !== s.target);
+    this.newRound({ practice: true, daily, target: pool[Math.floor(Math.random() * pool.length)] });
+  };
+  backToDaily = () => {
+    const d = this.state.daily;
+    this.stop();
+    this.setState({ practice: false, attempts: d.attempts, won: d.won, target: d.target, over: true, elapsed: 0, status: 'Ready' });
+  };
+  share = () => {
+    const s = this.state;
+    const rows = s.attempts.map((a) => (a.status === 'correct' ? '🟩' : a.status === 'wrong' ? '🟥' : '🟦')).join('');
+    const label = s.won ? s.attempts.length + '/6' : 'X/6';
+    try { navigator.clipboard && navigator.clipboard.writeText('Heardle - ' + s.artist.name + ' ' + label + '\n' + rows).catch(() => {}); } catch (err) { /* preview only */ }
+    this.setState({ status: 'Copied.' });
+  };
+  search = () => {
+    const q = this.state.query.trim().toLowerCase();
+    this.setState({ searched: true, results: q ? this.ARTISTS.filter((a) => (a.name + a.handle).toLowerCase().includes(q)) : [] });
+  };
+  choose(a) {
+    this.setState({ modal: 'loading', loadPct: 0, loadArtist: a });
+    clearInterval(this.loader);
+    this.loader = setInterval(() => {
+      const pct = this.state.loadPct + 6;
+      if (pct < 100) { this.setState({ loadPct: pct }); return; }
+      clearInterval(this.loader);
+      this.setState({ modal: null, artist: a, hasArtist: true, practice: false, target: 'Moonwalk Static' });
+      this.newRound({});
+    }, 90);
+  }
+  fmt(ms) {
+    const t = Math.floor(ms / 1000);
+    return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
+  }
+  renderVals() {
+    const s = this.state;
+    const tryNum = Math.min(s.attempts.length + 1, 6);
+    const limitSec = this.LIMITS[tryNum - 1];
+    const elapsedSec = s.elapsed / 1000;
+    let from = 0;
+    const segs = this.LIMITS.map((limit) => {
+      const unlocked = limit <= limitSec;
+      const fill = Math.max(0, Math.min(1, (elapsedSec - from) / (limit - from)));
+      const base = unlocked ? 'var(--unlock)' : 'var(--deck-edge)';
+      const bg = fill > 0 ? 'linear-gradient(90deg, var(--lcd) ' + fill * 100 + '%, ' + base + ' ' + fill * 100 + '%)' : base;
+      const seg = { flex: limit - from, bg };
+      from = limit;
+      return seg;
+    });
+    const rows = this.LIMITS.map((limit, i) => {
+      const a = s.attempts[i];
+      const alt = i % 2 === 0 ? 'alt' : '';
+      const clip = '0:' + String(limit).padStart(2, '0');
+      if (a && a.status === 'skip') return { n: i + 1, guess: '[skipped]', clip, result: 'skip', cls: 'mut ' + alt, color: 'var(--p-muted)' };
+      if (a && a.status === 'wrong') return { n: i + 1, guess: a.title, clip, result: 'wrong', cls: alt, color: 'var(--bad)' };
+      if (a) return { n: i + 1, guess: a.title, clip, result: 'correct', cls: alt, color: 'var(--good)' };
+      if (!s.over && i === s.attempts.length) return { n: i + 1, guess: s.playing ? '... listening' : 'your turn', clip, result: '', cls: 'cur', color: '#fff' };
+      return { n: i + 1, guess: '', clip, result: '', cls: 'mut ' + alt, color: 'inherit' };
+    });
+    const m = this.matches();
+    const fails = s.played - s.wins;
+    const distRows = [...s.dist.map((n, i) => ({ label: String(i + 1), n, color: '#0f6e9c' })), { label: 'X', n: fails, color: '#c43a84' }];
+    const top = Math.max(1, ...distRows.map((d) => d.n));
+    const now = new Date();
+    const mid = new Date(now); mid.setHours(24, 0, 0, 0);
+    const left = Math.floor((mid - now) / 1000);
+    const nextLine = s.practice ? 'Practice: stats not counted' : 'Next song in ' + String(Math.floor(left / 3600)).padStart(2, '0') + ':' + String(Math.floor(left / 60) % 60).padStart(2, '0') + ':' + String(left % 60).padStart(2, '0');
+    let modal = null;
+    const close = () => this.setState({ modal: null });
+    if (s.modal === 'finish') modal = { title: 'practice.exe', text: "Finish today's song first.", isInfo: true, buttons: [{ text: 'OK', act: close }] };
+    if (s.modal === 'cantplay') modal = { title: 'Heardle Player', text: "This song can't play in this browser.", isError: true, buttons: [{ text: 'Retry', act: close }, { text: 'Play a practice song', act: () => { close(); this.newRound({ practice: true, daily: { attempts: [], won: false, target: s.target }, target: 'Kitchen Light' }); } }, { text: 'Open on SoundCloud', act: close }] };
+    if (s.modal === 'loading') modal = { title: 'Loading songs', text: 'Loading ' + (s.loadArtist ? s.loadArtist.name : '') + "'s songs...", isLoading: true, blocks: Array.from({ length: 20 }, (_, i) => ({ bg: i * 5 < s.loadPct ? '#0f6e9c' : 'transparent' })), buttons: [] };
+    return {
+      themeClass: s.dark ? 'dark' : '', themeName: s.dark ? 'Dark' : 'Light',
+      isPlayer: s.app === 'player', isStats: s.app === 'stats', isReadme: s.app === 'readme', isFind: s.app === 'find', hasArtist: s.hasArtist,
+      tabPlayer: s.app === 'player' ? 'on' : '', tabStats: s.app === 'stats' ? 'on' : '', tabReadme: s.app === 'readme' ? 'on' : '',
+      openPlayer: () => this.openApp(s.hasArtist ? 'player' : 'find'), openStats: () => this.openApp('stats'), openReadme: () => this.openApp('readme'), openFind: () => this.openApp('find'),
+      artist: s.artist, over: s.over, notOver: !s.over, practice: s.practice, playing: s.playing, notPlaying: !s.playing,
+      spinClass: s.playing ? 'spin' : '', armAngle: s.playing ? 14 : -6, labelText: s.over ? s.artist.ini : '?',
+      timeNow: this.fmt(s.elapsed), timeEnd: this.fmt(s.over ? 222000 : limitSec * 1000),
+      modeLine: s.practice ? 'PRACTICE' : 'DAILY', tryLine: s.over ? (s.won ? 'SOLVED ' + s.attempts.length + '/6' : 'REVEALED X/6') : 'TRY ' + tryNum + ' OF 6',
+      songNote: s.practice ? 'practice song' : "today's song", clipAria: 'Clip length: ' + limitSec + ' of 16 seconds unlocked', elapsed: s.elapsed,
+      segs, rows, status: s.status, nextLine,
+      input: s.input, hasSuggestions: s.sugOpen && m.length > 0,
+      suggestions: m.map((title, i) => ({ title, cls: i === s.sugIdx ? 'on' : '', pick: () => this.setState({ input: title, picked: title, sugOpen: false }) })),
+      onInput: (e) => this.setState({ input: e.target.value, picked: null, sugOpen: true, sugIdx: 0 }),
+      onKey: (e) => { if (e.key === 'Enter') { e.preventDefault(); if (s.sugOpen && m[s.sugIdx]) this.setState({ input: m[s.sugIdx], picked: m[s.sugIdx], sugOpen: false }); else this.guess(); } },
+      guess: this.guess, skip: () => this.advance({ status: 'skip' }),
+      skipText: tryNum >= 6 ? "I don't know it" : 'Skip +' + (this.LIMITS[tryNum] - limitSec) + 's',
+      togglePlay: this.togglePlay, playLabel: s.playing ? 'Pause' : 'Play clip', playCaption: s.playing ? 'PAUSE' : s.over ? 'PLAY SONG' : 'PLAY ' + limitSec + 's',
+      onSeek: (e) => this.setState({ elapsed: Number(e.target.value) }),
+      answer: s.target, resultLabel: s.won ? 'Solved ' + s.attempts.length + '/6' : 'Revealed X/6', resultColor: s.won ? 'var(--good)' : 'var(--bad)',
+      resultMessage: s.won ? 'Correct.' : 'Out of tries.',
+      playAnother: this.doPractice, share: this.share, backToDaily: this.backToDaily, doPractice: this.doPractice,
+      stats: { played: s.played, winPct: s.played ? Math.round(s.wins / s.played * 100) + '%' : '0%', streak: s.streak, max: s.max, dist: distRows.map((d) => ({ ...d, w: Math.round(d.n / top * 100) + '%' })) },
+      query: s.query, onQuery: (e) => this.setState({ query: e.target.value }), onQueryKey: (e) => { if (e.key === 'Enter') { e.preventDefault(); this.search(); } }, search: this.search,
+      results: s.results.map((a) => ({ ...a, choose: () => this.choose(a) })), noResults: s.results.length === 0, searchNote: s.searched ? 'No artists found. Try another name.' : 'Search for an artist. Try "moth".',
+      startOpen: s.startOpen, startCls: s.startOpen ? 'on' : '', toggleStart: () => this.setState({ startOpen: !s.startOpen }),
+      toggleDark: () => this.setState({ dark: !s.dark, startOpen: false }),
+      volOpen: s.volOpen, toggleVol: () => this.setState({ volOpen: !s.volOpen }), vol: s.vol, onVol: (e) => this.setState({ vol: Number(e.target.value) }),
+      hasModal: Boolean(modal), modal: modal ?? { title: '', text: '', buttons: [], blocks: [] }
+    };
+  }
+}
+</script>
+</body>
+</html>

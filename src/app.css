@@ -1,0 +1,23 @@
+@import 'tailwindcss';
+@import '@fontsource/vt323/400.css';
+@import '$lib/retro/tokens.css';
+
+html,
+body {
+	height: 100%;
+	overflow: hidden;
+	overscroll-behavior: none;
+}
+
+body {
+	margin: 0;
+	background: #1f3561;
+}
+
+button {
+	cursor: pointer;
+}
+
+button:disabled {
+	cursor: default;
+}
