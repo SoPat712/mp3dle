@@ -30,12 +30,13 @@
 		active = -1;
 	}
 
-	function choose(track: Track) {
+	function choose(track: Track, fromKeyboard = false) {
 		clicked = track;
 		text = track.title;
 		open = false;
 		active = -1;
-		input.blur();
+		// a tap should put the phone keyboard away, but from the keyboard enter again should guess
+		if (!fromKeyboard) input.blur();
 	}
 
 	function typed() {
@@ -61,7 +62,7 @@
 		else if (event.key === 'ArrowUp') arrow(-1);
 		else if (event.key === 'Escape') open = false;
 		else if (event.key === 'Enter') {
-			if (suggestions[active]) choose(suggestions[active]);
+			if (suggestions[active]) choose(suggestions[active], true);
 			else onEnter();
 		} else return;
 		event.preventDefault();

@@ -34,6 +34,9 @@ type SoundCloudTrack = {
 
 type SoundCloudPage<T> = { collection?: T[]; next_href?: string | null };
 
+// a typo, an old link or an artist with nothing to play. nothing actually broke
+export class NotFoundError extends Error {}
+
 // soundcloud has no free api keys anymore, so we borrow the public id their own site uses.
 // it changes now and then, so only hang on to it for 30 mins
 let cachedClient: { id: string; expiresAt: number } | undefined;
@@ -59,6 +62,7 @@ async function fetchHtml(url: string) {
 		},
 		signal: AbortSignal.timeout(15_000)
 	});
+	if (response.status === 404) throw new NotFoundError("Couldn't find that artist on SoundCloud.");
 	if (!response.ok) throw new Error(`SoundCloud page request failed (${response.status}).`);
 	return response.text();
 }
@@ -160,6 +164,6 @@ export async function getArtistCatalog(permalink: string): Promise<TrackCatalog>
 
 	const uniqueSlugs = [...new Map(imported.map((track) => [track.slug, track])).values()];
 	const tracks = filterCatalogTracks(uniqueSlugs);
-	if (!tracks.length) throw new Error('This artist has no playable original tracks.');
+	if (!tracks.length) throw new NotFoundError('This artist has no playable original tracks.');
 	return { artist, tracks, updatedAt: new Date().toISOString() };
 }
