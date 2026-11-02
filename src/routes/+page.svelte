@@ -32,10 +32,6 @@
 
 <svelte:head>
 	<title>{data.catalog ? `${data.catalog.artist.username} Heardle` : 'SoundCloud Heardle'}</title>
-	<meta
-		name="description"
-		content="Search for a SoundCloud artist and play a daily Heardle from their public original tracks."
-	/>
 </svelte:head>
 
 <div class:dark-mode={darkMode} class="app-shell">

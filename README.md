@@ -1,7 +1,9 @@
 # SoundCloud Heardle
 
 An artist-agnostic Heardle game. Search for a public SoundCloud artist, choose the correct profile,
-and play a daily song drawn from that artist's cleaned public catalog.
+and play a daily song drawn from that artist's cleaned public catalog. It looks like an old desktop:
+the game is a player app in a window, with a Start menu, readme and stats. On phones the player
+fills the screen.
 
 ## What it does
 
@@ -15,7 +17,8 @@ and play a daily song drawn from that artist's cleaned public catalog.
 - Collapses duplicate normalized titles and prefers a clean, unsuffixed SoundCloud slug.
 - Offers another practice song after every completed round without changing the daily result,
   statistics, or streak.
-- Keeps game progress, per-artist statistics, theme, and volume in the browser only.
+- Lets you star artists to keep them on the desktop (or in the Start menu on a phone).
+- Keeps game progress, per-artist statistics, favorites, theme, and volume in the browser only.
 - Uses SoundCloud's official widget for playback.
 
 ## Privacy and limitations
@@ -33,7 +36,7 @@ tracks, blocked tracks, and clips shorter than 17 seconds are excluded.
 
 ## Run locally
 
-Requirements: Node.js 20.19+ and npm 10+.
+Requirements: Node.js 22.12+ (see `.nvmrc`) and npm 10+.
 
 ```bash
 npm install
@@ -65,10 +68,13 @@ alternate versions.
 ## Structure
 
 ```text
-src/lib/ArtistPicker.svelte          Artist search and profile selection
-src/lib/HeardleGame.svelte          Daily and unlimited-practice game interface
+src/lib/HeardleGame.svelte          The player: daily and practice rounds, playback, sharing
+src/lib/retro/Desktop.svelte        Desktop, windows, taskbar, Start menu and favorites
+src/lib/retro/FindArtist.svelte     Artist search and profile selection
+src/lib/retro/                      The other windows and shared widgets
+src/lib/game-state.ts               Saved games and stats
 src/lib/server/soundcloud.ts        Public artist search and catalog import
-src/lib/tracks.ts                    Catalog filtering and daily selection
+src/lib/tracks.ts                   Catalog filtering and daily selection
 src/routes/api/soundcloud/artists   Artist search endpoint
 src/routes/api/soundcloud/catalog   Per-artist catalog endpoint
 ```

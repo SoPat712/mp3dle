@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { getArtistCatalog } from '$lib/server/soundcloud';
+import { getArtistCatalog, NotFoundError } from '$lib/server/soundcloud';
 
 export async function GET({ url }) {
 	const artist = url.searchParams.get('artist')?.trim() ?? '';
@@ -14,6 +14,7 @@ export async function GET({ url }) {
 			}
 		});
 	} catch (error) {
+		if (error instanceof NotFoundError) return json({ error: error.message }, { status: 404 });
 		console.error(error);
 		return json(
 			{ error: error instanceof Error ? error.message : 'Could not load this artist.' },
