@@ -169,7 +169,7 @@ No sans web font. The system stack is the point. Do not substitute Inter or a Go
 | UI, Win95 chrome | `Tahoma, Verdana, 'DejaVu Sans', sans-serif`    | 12-13px; bold in title bars    |
 | Player text      | same                                            | 13-14px                        |
 | Logo line 1      | `'Arial Black', Arial, sans-serif`, italic, 900 | 22px, `MP3DLE`                 |
-| Logo line 2      | `Arial, sans-serif`, bold                       | 11px, blue, `PLAYER 2.1`       |
+| Logo line 2      | `Arial, sans-serif`, bold                       | 11px, blue, `PLAYER`           |
 | Readouts         | `'VT323', monospace`                            | 56px desktop, 44px mobile      |
 | Inputs           | UI stack                                        | **16px minimum** (no iOS zoom) |
 
@@ -238,7 +238,7 @@ Mock data is fake (`moth fields`, `Glasshouse`, `Moonwalk Static`). The real dat
 
 From top to bottom:
 
-1. **Header:** small record logo (just the record: a tiny tonearm beside it read as a stray number), `MP3DLE` / `PLAYER 2.1`, then round `?` (readme), `_` (minimise),
+1. **Header:** small record logo (just the record: a tiny tonearm beside it read as a stray number), `MP3DLE` / `PLAYER`, then round `?` (readme), `_` (minimise),
    `x` (close). Closing it is fine because the desktop icon reopens it.
 2. **Deck (dark, `--deck`):**
    - **Left:** a **brushed-silver platter panel** (`#e8eaed` to `#b4b9c0`, edge `#5f646c`) with a grey
@@ -390,7 +390,7 @@ Don't accept "it should work". Check all of this yourself:
 ## 8. Open questions for Josh
 
 1. Is the final draft approved, and what should change?
-2. Should the header keep `mp3dle Player`, and is `PLAYER 2.1` the version string he wants?
+2. Resolved on 2026-11-03: the header uses `PLAYER`; the made-up version was dropped.
 3. Practice blocked until today's round is done: yes or no?
 4. Should DRM-only tracks be excluded from the daily answer pool (`PLAN.md` Phase 1)?
 5. Does the Maisie-first order in `PLAN.md` still apply, and when should the baseline commit happen?
