@@ -11,7 +11,7 @@ Safari, Firefox and real phones are untested. `PLAN.md` 1.1, 1.2, 1.5, 1.6, 1.7 
 game) was done in smaller pieces: `Turntable`, `GuessBox`, `GuessTable`.
 
 Favorites (added 2026-11-02): the star in the player header saves an artist to
-`soundcloud-heardle:favorites` (`src/lib/favorites.ts`). They show as shortcut icons down the right of
+`mp3dle:favorites` (`src/lib/favorites.ts`). They show as shortcut icons down the right of
 the desktop and in the Start menu, which is the only place phones see them.
 
 Safari (found 2026-11-02, tested in Mac Safari 27.2, iPhone untested): the first `widget.play()` after
@@ -32,7 +32,7 @@ verify the results yourself with diffs, checks, and a real browser. Josh interru
 implementing when it should have been writing prompts, so don't write the feature code yourself
 unless he asks. He is cost-sensitive: send him short updates and don't start work he hasn't asked for.
 
-**Scope:** this repo only (`soundcloud-heardle`). Do **not** apply the retro look to
+**Scope:** this repo only (`mp3dle`). Do **not** apply the retro look to
 `../maisie-heardle`. Josh rejected a redesign there and wants its original turntable UI kept, with
 functional fixes only.
 
@@ -46,6 +46,9 @@ functional fixes only.
   SvelteKit 3 has no `svelte.config.js` (options live in `vite.config.ts`) and imports use
   `#lib/...` with `.js` on TypeScript files. `package.json` overrides `minimatch` to 11 to clear an
   advisory in ESLint's copy; drop the override once ESLint depends on 11 itself.
+- Renamed from SoundCloud Heardle to mp3dle on 2026-11-02. Saved data used to live under
+  `soundcloud-heardle:*`; `moveOldKeys()` in `src/lib/storage.ts` moves it to `mp3dle:*` on load.
+  The daily seed keeps the old name for dates before 2026-11-04 (`dailySeedName` in `tracks.ts`).
 - Commands: `npm run dev`, `npm run check`, `npm test`, `npm run lint`, `npm run build`.
 - **Baseline, run 2026-11-01 on Node 22.14:** Vitest 17/17 pass, `svelte-check` 0 errors and 0 warnings,
   Prettier and ESLint clean. `npm run build` was not run. Re-run these yourself before changing anything.
@@ -323,13 +326,13 @@ Nothing below may be lost. Map every item in QA.
 | Clip lengths 1, 2, 4, 7, 11, 16 seconds | `SEGMENT_INCREMENTS = [1,1,2,3,4,5]`              | Clip bar, chips, table         |
 | Play, pause, skip, guess                | `togglePlayPause`, `skipIntro`, `submitGuess`     | Play key, Skip, Guess          |
 | Suggestions and keyboard nav            | `suggestions`, `onInputKeydown`, ARIA listbox     | Dropdown, same ARIA            |
-| Saved game, stats, volume, theme        | `localStorage` keys `soundcloud-heardle:*`        | **Keep keys unchanged**        |
+| Saved game, stats, volume, theme        | `localStorage` keys `mp3dle:*`                    | **Keep keys unchanged**        |
 | Daily song and practice                 | `getDailyTrack`, `getPracticeTrack`, `?practice=` | Unchanged                      |
 | Full-song seek after the round          | Pointer and keyboard seek handlers                | Clip bar becomes seek bar      |
 | Record rotation matches playback        | `spinVinyl`, `syncVinylToPosition`                | Deck record                    |
 | Share                                   | `shareResult`, `buildShareText`                   | Result panel, side button      |
 | Result, artwork, song links             | `.end-game-dock`                                  | Result panel                   |
-| Theme toggle                            | `+page.svelte`, `soundcloud-heardle:theme`        | Start menu                     |
+| Theme toggle                            | `+page.svelte`, `mp3dle:theme`                    | Start menu                     |
 | Widget errors and retry                 | `widgetError`, `reloadPlayer`                     | Error dialog                   |
 | Page titles and meta                    | `+page.svelte`, `+layout.svelte`                  | Unchanged                      |
 | Catalog rules and API routes            | `tracks.ts`, `src/lib/server/soundcloud.ts`       | **Do not touch for this work** |

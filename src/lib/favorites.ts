@@ -6,7 +6,7 @@ export type Favorite = {
 	avatarUrl?: string;
 };
 
-const FAVORITES_KEY = 'soundcloud-heardle:favorites';
+const FAVORITES_KEY = 'mp3dle:favorites';
 
 // someone could have edited this by hand, so only keep entries that make sense
 export function parseFavorites(saved: string | null): Favorite[] {

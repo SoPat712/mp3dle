@@ -42,7 +42,12 @@ export function isValidDateKey(dateKey: string) {
 	return date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
-// careful changing anything in here or the seed strings, it changes everyone's daily song
+// the seed got the new name on 2026-11-04. earlier days keep the old one so nobody's song changed
+// on them mid-day. careful changing anything else in here, it changes everyone's daily song
+function dailySeedName(dateKey: string) {
+	return dateKey < '2026-11-04' ? 'soundcloud-heardle' : 'mp3dle';
+}
+
 export function getDailyTrack(dateKey: string, catalog: Track[], artistKey: string) {
 	if (!isValidDateKey(dateKey)) throw new Error(`Invalid date key: ${dateKey}`);
 	const tracks = filterCatalogTracks(catalog);
@@ -52,7 +57,7 @@ export function getDailyTrack(dateKey: string, catalog: Track[], artistKey: stri
 	let winner = tracks[0];
 	let best = -1;
 	for (const track of tracks) {
-		const score = seedrandom(`soundcloud-heardle:${artistKey}:${dateKey}:${track.slug}`)();
+		const score = seedrandom(`${dailySeedName(dateKey)}:${artistKey}:${dateKey}:${track.slug}`)();
 		if (score > best) {
 			winner = track;
 			best = score;
@@ -72,7 +77,7 @@ export function getPracticeTrack<T extends Track>(
 ): T {
 	const tracks = filterCatalogTracks(catalog).sort((a, b) => a.slug.localeCompare(b.slug));
 	if (!tracks.length) throw new Error('This artist has no playable original tracks.');
-	const roll = seedrandom(`soundcloud-heardle:${artistKey}:practice:${practiceKey}`)();
+	const roll = seedrandom(`mp3dle:${artistKey}:practice:${practiceKey}`)();
 	return tracks[Math.floor(roll * tracks.length)];
 }
 
