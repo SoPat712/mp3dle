@@ -58,7 +58,7 @@ async function fetchHtml(url: string) {
 	const response = await fetch(url, {
 		headers: {
 			accept: 'text/html',
-			'user-agent': 'Mozilla/5.0 (compatible; SoundCloudHeardle/1.0)'
+			'user-agent': 'Mozilla/5.0 (compatible; mp3dle/1.0)'
 		},
 		signal: AbortSignal.timeout(15_000)
 	});

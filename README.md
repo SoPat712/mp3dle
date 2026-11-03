@@ -1,7 +1,7 @@
-# SoundCloud Heardle
+# mp3dle
 
-An artist-agnostic Heardle game. Search for a public SoundCloud artist, choose the correct profile,
-and play a daily song drawn from that artist's cleaned public catalog. It looks like an old desktop:
+A daily guess-the-song game for any SoundCloud artist. Search for a public artist, choose the
+correct profile, and play a daily song drawn from that artist's cleaned public catalog. It looks like an old desktop:
 the game is a player app in a window, with a Start menu, readme and stats. On phones the player
 fills the screen.
 
@@ -68,7 +68,7 @@ alternate versions.
 ## Structure
 
 ```text
-src/lib/HeardleGame.svelte          The player: daily and practice rounds, playback, sharing
+src/lib/Mp3dleGame.svelte          The player: daily and practice rounds, playback, sharing
 src/lib/retro/Desktop.svelte        Desktop, windows, taskbar, Start menu and favorites
 src/lib/retro/FindArtist.svelte     Artist search and profile selection
 src/lib/retro/                      The other windows and shared widgets

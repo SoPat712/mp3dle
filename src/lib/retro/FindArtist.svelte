@@ -76,7 +76,7 @@
 						<button
 							type="button"
 							class="menu-item result"
-							aria-label={`Play ${artist.username} Heardle`}
+							aria-label={`Play songs by ${artist.username}`}
 							on:click={() => onChoose(artist)}
 						>
 							<ArtistPic username={artist.username} avatarUrl={artist.avatarUrl} />

@@ -1,11 +1,11 @@
-# Handoff: SoundCloud Heardle retro redesign
+# Handoff: mp3dle retro redesign
 
 For the Codex agent taking over as orchestrator from Claude. Written 2026-11-01.
 
 ## 1. Read this first
 
 **Status, 2026-11-01: Josh approved building, and Claude built the retro UI in `src/lib/retro/` and
-`src/lib/HeardleGame.svelte`. It is uncommitted and waiting for his review.** Checked in Chrome only.
+`src/lib/Mp3dleGame.svelte`. It is uncommitted and waiting for his review.** Checked in Chrome only.
 Safari, Firefox and real phones are untested. `PLAN.md` 1.1, 1.2, 1.5, 1.6, 1.7 and 1.8 are done; 1.3,
 1.4 and 1.9 are still open. Josh also asked for simple code with short lowercase comments, so keep it that way. The build phases below describe the original plan; Phase C (splitting the
 game) was done in smaller pieces: `Turntable`, `GuessBox`, `GuessTable`.
@@ -50,7 +50,7 @@ functional fixes only.
 - **Baseline, run 2026-11-01 on Node 22.14:** Vitest 17/17 pass, `svelte-check` 0 errors and 0 warnings,
   Prettier and ESLint clean. `npm run build` was not run. Re-run these yourself before changing anything.
 - `PLAN.md` holds the bug analysis and is still open. Phase 1 is not done: the iframe still has
-  `allow="autoplay"` only (`src/lib/HeardleGame.svelte:1307`), the warm-up still runs, and
+  `allow="autoplay"` only (`src/lib/Mp3dleGame.svelte:1307`), the warm-up still runs, and
   `crypto.randomUUID` is still unguarded (`:928`, `:933`). Only those three were checked; verify the
   other items before relying on them.
 - **This document replaces `PLAN.md` Phase 3 (UI polish) only.** Phases 1, 2 and 4 still apply. The
@@ -62,8 +62,8 @@ functional fixes only.
 
 | What                        | Where                                             | Note                                                 |
 | --------------------------- | ------------------------------------------------- | ---------------------------------------------------- |
-| Desktop prototype           | `docs/design/retro-final/Heardle-Desktop.dc.html` | Working clickable mockup, fake data                  |
-| Mobile prototype            | `docs/design/retro-final/Heardle-Mobile.dc.html`  | Working clickable mockup, fake data                  |
+| Desktop prototype           | `docs/design/retro-final/mp3dle-Desktop.dc.html`  | Working clickable mockup, fake data                  |
+| Mobile prototype            | `docs/design/retro-final/mp3dle-Mobile.dc.html`   | Working clickable mockup, fake data                  |
 | Canvas (page "Final draft") | https://claude.ai/artifact/9tyCPnoG7c3LYK4PrJQiP2 | Private to Josh. You probably can't open it; ask him |
 
 The prototypes are reference only. They use a proprietary template format (`<x-dc>`, `{{holes}}`,
@@ -113,7 +113,7 @@ share text's coloured squares are game output and stay.
 
 Tokens below match the prototypes. Put them in `src/lib/retro/tokens.css`, set on `.app-shell`, with
 dark values under `.app-shell.dark-mode`, replacing the current `--app-*` variables and the `COLORS`
-object in `HeardleGame.svelte`.
+object in `Mp3dleGame.svelte`.
 
 ### Colour
 
@@ -165,7 +165,7 @@ No sans web font. The system stack is the point. Do not substitute Inter or a Go
 | ---------------- | ----------------------------------------------- | ------------------------------ |
 | UI, Win95 chrome | `Tahoma, Verdana, 'DejaVu Sans', sans-serif`    | 12-13px; bold in title bars    |
 | Player text      | same                                            | 13-14px                        |
-| Logo line 1      | `'Arial Black', Arial, sans-serif`, italic, 900 | 22px, `HEARDLE`                |
+| Logo line 1      | `'Arial Black', Arial, sans-serif`, italic, 900 | 22px, `MP3DLE`                 |
 | Logo line 2      | `Arial, sans-serif`, bold                       | 11px, blue, `PLAYER 2.1`       |
 | Readouts         | `'VT323', monospace`                            | 56px desktop, 44px mobile      |
 | Inputs           | UI stack                                        | **16px minimum** (no iOS zoom) |
@@ -202,7 +202,7 @@ Mock data is fake (`moth fields`, `Glasshouse`, `Moonwalk Static`). The real dat
 
 ```
 +-- wallpaper: blue stripes, huge faded record bottom-right ---------------+
-| [Heardle    ]  +--Heardle Player (draggable)--------+  +-stats.xls-----+ |
+| [mp3dle    ]  +--mp3dle Player (draggable)--------+  +-stats.xls-----+ |
 | [Find Artist]  | logo                     (?)(_)(x) |  | played won... | |
 | [readme.txt ]  | +--dark deck--------------------+  |  | distribution  | |
 | [stats.xls  ]  | | record+arm   00:02 / 00:04    |  |  +---------------+ |
@@ -215,16 +215,16 @@ Mock data is fake (`moth fields`, `Glasshouse`, `Moonwalk Static`). The real dat
 |                | [Skip +3s]                         |                    |
 |                | [ # Guess | Clip | Result table ]  |                    |
 |                +------------------------------------+                    |
-+--[Start] [Heardle Player] [stats.xls]---------------------[spk] 12:04 AM-+
++--[Start] [mp3dle Player] [stats.xls]---------------------[spk] 12:04 AM-+
 ```
 
 - **Wallpaper:** `--wall` with stripes, and a large faded record bleeding off the bottom-right. The
   page itself never scrolls.
 - **Desktop icons** (34px art, white label, double-click on mouse, single tap on touch; Enter works):
-  `Heardle Player`, `Find Artist`, `readme.txt`, `stats.xls`, `practice.exe`.
+  `mp3dle Player`, `Find Artist`, `readme.txt`, `stats.xls`, `practice.exe`.
 - **Taskbar** (40px): Start, one button per open window (pressed when focused, click to minimise or
   restore), and a tray with a speaker icon that opens the volume slider and a local-time clock.
-- **Start menu:** a vertical sidebar reading `Heardle`, then the same five items, plus `Display: Light
+- **Start menu:** a vertical sidebar reading `mp3dle`, then the same five items, plus `Display: Light
 / Dark` and `Open SoundCloud profile`.
 - **Windows:** draggable by the title bar with pointer capture (no global listeners), clamped so the
   title bar stays on screen. Clicking raises a window. Position is per session; don't persist it.
@@ -235,7 +235,7 @@ Mock data is fake (`moth fields`, `Glasshouse`, `Moonwalk Static`). The real dat
 
 From top to bottom:
 
-1. **Header:** small record logo (just the record: a tiny tonearm beside it read as a stray number), `HEARDLE` / `PLAYER 2.1`, then round `?` (readme), `_` (minimise),
+1. **Header:** small record logo (just the record: a tiny tonearm beside it read as a stray number), `MP3DLE` / `PLAYER 2.1`, then round `?` (readme), `_` (minimise),
    `x` (close). Closing it is fine because the desktop icon reopens it.
 2. **Deck (dark, `--deck`):**
    - **Left:** a **brushed-silver platter panel** (`#e8eaed` to `#b4b9c0`, edge `#5f646c`) with a grey
@@ -275,7 +275,7 @@ and plays the full song.
   avatar, username, `@permalink`, tracks and followers; `Cancel` when an artist is already loaded.
   Selecting shows a **Win95 copy-style progress dialog**, `Loading moth fields' songs...`, with a blue
   block bar. This fixes `PLAN.md` 1.8. The tip about follower counts stays. Errors stay visible here.
-- **readme.txt** (Notepad look, white text area): how-to-play copy from `HeardleGame.svelte:1148-1150`,
+- **readme.txt** (Notepad look, white text area): how-to-play copy from `Mp3dleGame.svelte:1148-1150`,
   privacy copy from `:1235-1238`, and the catalog line from `:1239-1243`. Keep this wording.
 - **stats.xls** (spreadsheet look): played, win %, streak, max streak from `Stats`, plus a distribution
   chart with fail count (`played - wins`) as an `X` row. Show `Next song in`, the practice note, and the
@@ -293,7 +293,7 @@ Modals use native `<dialog>` as `PLAN.md` 2.4 recommends. Non-modal windows are 
 Pocket-PC feel: one app fills the screen, and the taskbar stays at the bottom.
 
 ```
-+--Heardle Player------(?)(x)+   glossy silver header
++--mp3dle Player------(?)(x)+   glossy silver header
 | deck: record 92px, time    |
 | clip bar                   |
 | TRY 3 OF 6, artist [Change]|
@@ -352,7 +352,7 @@ in `PLAN.md`.
 `MessageBox`, plus icons. No game logic yet. Add a temporary dev-only preview route for checking them,
 and remove it before finishing.
 
-**Phase C: split the game.** `HeardleGame.svelte` is 2,551 lines. Extract state and widget control
+**Phase C: split the game.** `Mp3dleGame.svelte` is 2,551 lines. Extract state and widget control
 without changing the UI (`PLAN.md` Phase 4). Tests must stay green. Keep this separate from the visual
 work so regressions can be traced.
 
@@ -387,7 +387,7 @@ Don't accept "it should work". Check all of this yourself:
 ## 8. Open questions for Josh
 
 1. Is the final draft approved, and what should change?
-2. Should the header keep `Heardle Player`, and is `PLAYER 2.1` the version string he wants?
+2. Should the header keep `mp3dle Player`, and is `PLAYER 2.1` the version string he wants?
 3. Practice blocked until today's round is done: yes or no?
 4. Should DRM-only tracks be excluded from the daily answer pool (`PLAN.md` Phase 1)?
 5. Does the Maisie-first order in `PLAN.md` still apply, and when should the baseline commit happen?
