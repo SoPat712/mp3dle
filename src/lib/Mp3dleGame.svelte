@@ -67,8 +67,8 @@
 		: getDailyTrack(today, catalog.tracks, artistKey);
 
 	// don't rename these, people's saved games and stats live under them
-	const gameKey = `soundcloud-heardle:${artistKey}:game:${today}:${song.slug}`;
-	const statsKey = `soundcloud-heardle:${artistKey}:stats:v1`;
+	const gameKey = `mp3dle:${artistKey}:game:${today}:${song.slug}`;
+	const statsKey = `mp3dle:${artistKey}:stats:v1`;
 
 	let attemptInfos: AttemptInfo[] = [];
 	let gameOver = false;

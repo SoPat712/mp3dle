@@ -24,7 +24,7 @@
 	type WindowId = 'player' | 'stats' | 'readme' | 'find';
 	type IconId = WindowId | 'practice';
 
-	const VOLUME_KEY = 'soundcloud-heardle:volume';
+	const VOLUME_KEY = 'mp3dle:volume';
 	const widths = { player: 700, stats: 300, readme: 470, find: 480 };
 	const allWindows = Object.keys(widths) as WindowId[];
 	const LOAD_BLOCKS = 20;

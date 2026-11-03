@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Desktop from '#lib/retro/Desktop.svelte';
-	import { load, save } from '#lib/storage.js';
+	import { load, moveOldKeys, save } from '#lib/storage.js';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
-	const THEME_KEY = 'soundcloud-heardle:theme';
+	// before anything reads storage
+	moveOldKeys();
+
+	const THEME_KEY = 'mp3dle:theme';
 	const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
 
 	// picking a theme in the start menu beats whatever the system says

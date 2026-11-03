@@ -1,3 +1,4 @@
+import seedrandom from 'seedrandom';
 import { describe, expect, it } from 'vitest';
 import {
 	filterCatalogTracks,
@@ -63,6 +64,24 @@ describe('daily artist selection', () => {
 
 	it('rejects an empty catalog', () => {
 		expect(() => getDailyTrack('2026-08-20', [], 'artist')).toThrow('no playable');
+	});
+
+	it('keeps the old seed name for days before the rename', () => {
+		const catalog = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map((slug) => track(slug, slug));
+		// the old way of picking, written out by hand
+		const pick = (name: string, dateKey: string) =>
+			catalog.reduce((best, item) =>
+				seedrandom(`${name}:artist:${dateKey}:${item.slug}`)() >
+				seedrandom(`${name}:artist:${dateKey}:${best.slug}`)()
+					? item
+					: best
+			);
+		for (const day of ['2026-11-01', '2026-11-02', '2026-11-03']) {
+			expect(getDailyTrack(day, catalog, 'artist')).toEqual(pick('soundcloud-heardle', day));
+		}
+		for (const day of ['2026-11-04', '2026-11-05', '2027-01-01']) {
+			expect(getDailyTrack(day, catalog, 'artist')).toEqual(pick('mp3dle', day));
+		}
 	});
 });
 
