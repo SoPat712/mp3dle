@@ -537,7 +537,7 @@
 		</svg>
 		<div class="logo">
 			<span class="logo-name">MP3DLE</span>
-			<span class="logo-version">PLAYER 2.1</span>
+			<span class="logo-version">PLAYER</span>
 		</div>
 		<span class="head-gap"></span>
 		<button
