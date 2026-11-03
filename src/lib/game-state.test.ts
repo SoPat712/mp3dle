@@ -4,7 +4,7 @@ import {
 	createEmptyStats,
 	parseSavedGame,
 	sanitizeStats
-} from '$lib/game-state';
+} from '#lib/game-state.js';
 
 describe('game statistics', () => {
 	it('starts a streak with a win', () => {

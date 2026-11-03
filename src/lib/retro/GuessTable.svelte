@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { AttemptInfo } from '$lib/game-state';
+	import type { AttemptInfo } from '#lib/game-state.js';
 
 	export let attempts: AttemptInfo[];
 	export let clipLengths: number[];

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { normalizeTrackTitle, type Track } from '$lib/tracks';
+	import { normalizeTrackTitle, type Track } from '#lib/tracks.js';
 
 	export let tracks: Track[];
 	export let onEnter: () => void;

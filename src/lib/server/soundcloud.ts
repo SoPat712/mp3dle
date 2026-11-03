@@ -3,7 +3,7 @@ import {
 	type SoundCloudArtist,
 	type Track,
 	type TrackCatalog
-} from '$lib/tracks';
+} from '#lib/tracks.js';
 
 const API_URL = 'https://api-v2.soundcloud.com';
 const SOUNDCLOUD_URL = 'https://soundcloud.com';

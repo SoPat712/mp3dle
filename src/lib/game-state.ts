@@ -1,4 +1,4 @@
-import { getLocalDateKey, isValidDateKey } from '$lib/tracks';
+import { getLocalDateKey, isValidDateKey } from '#lib/tracks.js';
 
 export type Stats = {
 	played: number;

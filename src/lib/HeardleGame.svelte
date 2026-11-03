@@ -2,13 +2,13 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { onDestroy, onMount } from 'svelte';
-	import { dragHandle } from '$lib/retro/drag';
-	import GuessBox from '$lib/retro/GuessBox.svelte';
-	import GuessTable from '$lib/retro/GuessTable.svelte';
-	import Icon from '$lib/retro/icons/Icon.svelte';
-	import MessageBox from '$lib/retro/MessageBox.svelte';
-	import Turntable from '$lib/retro/Turntable.svelte';
-	import { load, remove, save } from '$lib/storage';
+	import { dragHandle } from '#lib/retro/drag.js';
+	import GuessBox from '#lib/retro/GuessBox.svelte';
+	import GuessTable from '#lib/retro/GuessTable.svelte';
+	import Icon from '#lib/retro/icons/Icon.svelte';
+	import MessageBox from '#lib/retro/MessageBox.svelte';
+	import Turntable from '#lib/retro/Turntable.svelte';
+	import { load, remove, save } from '#lib/storage.js';
 	import {
 		getDailyTrack,
 		getGuessTracks,
@@ -17,7 +17,7 @@
 		normalizeTrackTitle,
 		type Track,
 		type TrackCatalog
-	} from '$lib/tracks';
+	} from '#lib/tracks.js';
 	import {
 		calculateNextStats,
 		createEmptyStats,
@@ -25,7 +25,7 @@
 		sanitizeStats,
 		type AttemptInfo,
 		type Stats
-	} from '$lib/game-state';
+	} from '#lib/game-state.js';
 
 	export let catalog: TrackCatalog;
 	export let practiceKey = '';
@@ -433,7 +433,7 @@
 
 	function playAnother() {
 		// keep rolling until it's a different song from this one
-		let key = '';
+		let key: string;
 		do {
 			key = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 		} while (
@@ -441,11 +441,11 @@
 			getPracticeTrack(catalog.tracks, artistKey, key).slug === song.slug
 		);
 
-		goto(resolve(`/?artist=${encodeURIComponent(artistKey)}&practice=${key}`), { noScroll: true });
+		goto(resolve(`/?artist=${encodeURIComponent(artistKey)}&practice=${key}`), { reset: false });
 	}
 
 	function backToDaily() {
-		goto(resolve(`/?artist=${encodeURIComponent(artistKey)}`), { noScroll: true });
+		goto(resolve(`/?artist=${encodeURIComponent(artistKey)}`), { reset: false });
 	}
 
 	export function startPractice() {

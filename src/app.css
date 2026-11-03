@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 @import '@fontsource/vt323/400.css';
-@import '$lib/retro/tokens.css';
+@import './lib/retro/tokens.css';
 
 html,
 body {

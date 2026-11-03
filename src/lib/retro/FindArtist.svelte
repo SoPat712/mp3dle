@@ -1,7 +1,7 @@
 <script lang="ts">
-	import ArtistPic from '$lib/retro/ArtistPic.svelte';
-	import Icon from '$lib/retro/icons/Icon.svelte';
-	import type { SoundCloudArtist } from '$lib/tracks';
+	import ArtistPic from '#lib/retro/ArtistPic.svelte';
+	import Icon from '#lib/retro/icons/Icon.svelte';
+	import type { SoundCloudArtist } from '#lib/tracks.js';
 
 	export let hasArtist = false;
 	export let pageError = '';

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Icon from '$lib/retro/icons/Icon.svelte';
+	import Icon from '#lib/retro/icons/Icon.svelte';
 
 	export let title: string;
 	export let icon: 'error' | 'info' | '' = '';

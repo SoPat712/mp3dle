@@ -38,10 +38,14 @@ functional fixes only.
 
 **Repo state, checked 2026-11-01:**
 
-- Branch `main` has **no commits**. Everything is untracked. Commit only when Josh asks, but tell him
-  a baseline commit is needed before any large rewrite, otherwise nothing can be reverted.
-- Node: `.nvmrc` says 20; `.claude/launch.json` uses v22.14.0. Stack: SvelteKit 2, Svelte 5 (the code
-  uses legacy `export let` and `$:` syntax), Tailwind 4, Netlify adapter, Vitest.
+- Repo: github.com/SoPat712/Hear, branch `main`. CI runs check, lint, test and build on every push.
+  Commit only when Josh asks.
+- Node 24 (`.nvmrc`). Stack (upgraded 2026-11-02): SvelteKit 3 on Vite 8, Svelte 5 (the code uses
+  legacy `export let` and `$:` syntax), Tailwind 4, Netlify adapter 7, Vitest 5, ESLint 10,
+  TypeScript 6. TypeScript 7 waits until SvelteKit, svelte-check and typescript-eslint support it.
+  SvelteKit 3 has no `svelte.config.js` (options live in `vite.config.ts`) and imports use
+  `#lib/...` with `.js` on TypeScript files. `package.json` overrides `minimatch` to 11 to clear an
+  advisory in ESLint's copy; drop the override once ESLint depends on 11 itself.
 - Commands: `npm run dev`, `npm run check`, `npm test`, `npm run lint`, `npm run build`.
 - **Baseline, run 2026-11-01 on Node 22.14:** Vitest 17/17 pass, `svelte-check` 0 errors and 0 warnings,
   Prettier and ESLint clean. `npm run build` was not run. Re-run these yourself before changing anything.
