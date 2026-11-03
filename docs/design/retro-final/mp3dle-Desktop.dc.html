@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Heardle desktop</title>
+<title>mp3dle desktop</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -70,7 +70,7 @@ input[type=range]{accent-color:#c43a84}
     <nav aria-label="Desktop" style="position: absolute; left: 14px; top: 14px; display: flex; flex-direction: column; gap: 10px">
       <button type="button" class="ic {{ icons.player.cls }}" onClick="{{ icons.player.select }}" onDoubleClick="{{ icons.player.open }}" onKeyDown="{{ icons.player.key }}">
         <svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="#111"></circle><circle cx="17" cy="17" r="11" fill="none" stroke="#3a3a3a"></circle><circle cx="17" cy="17" r="5.5" fill="#127fb3"></circle><circle cx="17" cy="17" r="1.5" fill="#fff"></circle></svg>
-        <span>Heardle Player</span>
+        <span>mp3dle Player</span>
       </button>
       <button type="button" class="ic {{ icons.find.cls }}" onClick="{{ icons.find.select }}" onDoubleClick="{{ icons.find.open }}" onKeyDown="{{ icons.find.key }}">
         <svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34"><path d="M2 8h11l3 3h16v19H2z" fill="#e8c25a" stroke="#7a5a12"></path><path d="M2 13h30" stroke="#7a5a12"></path></svg>
@@ -166,11 +166,11 @@ input[type=range]{accent-color:#c43a84}
     </sc-if>
 
     <sc-if value="{{ w.player.show }}" hint-placeholder-val="{{ true }}">
-      <section class="abs win ap" aria-label="Heardle Player" style="left: {{ w.player.x }}px; top: {{ w.player.y }}px; z-index: {{ w.player.z }}; width: 700px; padding: 9px 13px 8px; display: flex; flex-direction: column; gap: 9px" onPointerDown="{{ w.player.focus }}">
+      <section class="abs win ap" aria-label="mp3dle Player" style="left: {{ w.player.x }}px; top: {{ w.player.y }}px; z-index: {{ w.player.z }}; width: 700px; padding: 9px 13px 8px; display: flex; flex-direction: column; gap: 9px" onPointerDown="{{ w.player.focus }}">
         <div class="aphead" onPointerDown="{{ w.player.down }}" onPointerMove="{{ drag }}" onPointerUp="{{ dragEnd }}">
           <svg aria-hidden="true" width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="14" fill="#14171b"></circle><circle cx="15" cy="15" r="9" fill="none" stroke="#3a3f47"></circle><circle cx="15" cy="15" r="5" fill="#c43a84"></circle><circle cx="15" cy="15" r="1.5" fill="#fff"></circle></svg>
           <div style="display: flex; flex-direction: column; line-height: 0.95">
-            <span style="font: italic 900 22px 'Arial Black', Arial, sans-serif; letter-spacing: -0.5px">HEARDLE</span>
+            <span style="font: italic 900 22px 'Arial Black', Arial, sans-serif; letter-spacing: -0.5px">MP3DLE</span>
             <span style="font: bold 11px Arial, sans-serif; color: var(--blue); letter-spacing: 3px">PLAYER 2.1</span>
           </div>
           <span style="flex: 1"></span>
@@ -292,9 +292,9 @@ input[type=range]{accent-color:#c43a84}
 
   <sc-if value="{{ startOpen }}" hint-placeholder-val="{{ false }}">
     <div class="w95" style="position: absolute; left: 3px; bottom: 38px; z-index: 900; width: 250px; display: flex">
-      <div aria-hidden="true" style="width: 28px; background: linear-gradient(0deg, #0b4f75, #127fb3); color: #fff; writing-mode: vertical-rl; transform: rotate(180deg); padding: 8px 0; text-align: left; font: italic 900 18px 'Arial Black', Arial, sans-serif">Heardle</div>
+      <div aria-hidden="true" style="width: 28px; background: linear-gradient(0deg, #0b4f75, #127fb3); color: #fff; writing-mode: vertical-rl; transform: rotate(180deg); padding: 8px 0; text-align: left; font: italic 900 18px 'Arial Black', Arial, sans-serif">mp3dle</div>
       <div style="flex: 1; min-width: 0">
-        <button type="button" class="mi" onClick="{{ w.player.openIt }}">Heardle Player</button>
+        <button type="button" class="mi" onClick="{{ w.player.openIt }}">mp3dle Player</button>
         <button type="button" class="mi" onClick="{{ openFind }}">Find Artist...</button>
         <button type="button" class="mi" onClick="{{ openReadme }}">readme.txt</button>
         <button type="button" class="mi" onClick="{{ openStats }}">stats.xls</button>
@@ -483,7 +483,7 @@ class Component extends DCLogic {
     const s = this.state;
     const rows = s.attempts.map((a) => (a.status === 'correct' ? '🟩' : a.status === 'wrong' ? '🟥' : '🟦')).join('');
     const label = s.won ? s.attempts.length + '/6' : 'X/6';
-    try { navigator.clipboard && navigator.clipboard.writeText('Heardle - ' + s.artist.name + ' ' + label + '\n' + rows).catch(() => {}); } catch (err) { /* preview only */ }
+    try { navigator.clipboard && navigator.clipboard.writeText('mp3dle - ' + s.artist.name + ' ' + label + '\n' + rows).catch(() => {}); } catch (err) { /* preview only */ }
     this.setState({ status: 'Copied.' });
   };
   search = () => {
@@ -560,9 +560,9 @@ class Component extends DCLogic {
     let modal = null;
     const close = () => this.setState({ modal: null });
     if (s.modal === 'finish') modal = { title: 'practice.exe', text: "Finish today's song first.", isInfo: true, buttons: [{ text: 'OK', act: close }] };
-    if (s.modal === 'cantplay') modal = { title: 'Heardle Player', text: "This song can't play in this browser.", isError: true, buttons: [{ text: 'Retry', act: close }, { text: 'Play a practice song', act: () => { close(); this.newRound({ practice: true, daily: { attempts: [], won: false, target: s.target }, target: 'Kitchen Light' }); } }, { text: 'Open on SoundCloud', act: close }] };
+    if (s.modal === 'cantplay') modal = { title: 'mp3dle Player', text: "This song can't play in this browser.", isError: true, buttons: [{ text: 'Retry', act: close }, { text: 'Play a practice song', act: () => { close(); this.newRound({ practice: true, daily: { attempts: [], won: false, target: s.target }, target: 'Kitchen Light' }); } }, { text: 'Open on SoundCloud', act: close }] };
     if (s.modal === 'loading') modal = { title: 'Loading songs', text: 'Loading ' + (s.loadArtist ? s.loadArtist.name : '') + "'s songs...", isLoading: true, blocks: Array.from({ length: 20 }, (_, i) => ({ bg: i * 5 < s.loadPct ? '#0f6e9c' : 'transparent' })), buttons: [] };
-    const tasks = [['player', 'Heardle Player'], ['find', 'Find Artist'], ['stats', 'stats.xls - ' + s.artist.name], ['readme', 'readme.txt - Notepad']]
+    const tasks = [['player', 'mp3dle Player'], ['find', 'Find Artist'], ['stats', 'stats.xls - ' + s.artist.name], ['readme', 'readme.txt - Notepad']]
       .filter(([id]) => s.windows[id].open)
       .map(([id, text]) => {
         const v = s.windows[id];

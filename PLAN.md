@@ -36,9 +36,9 @@ mobile bugs (worse: 96 of Maisie's 111 tracks are DRM-only), so it gets fixed fi
 
 ## Phase 1: Make playback work everywhere (ship first)
 
-All in [HeardleGame.svelte](src/lib/HeardleGame.svelte) unless noted.
+All in [Mp3dleGame.svelte](src/lib/Mp3dleGame.svelte) unless noted.
 
-1. **Allow DRM in the widget iframe** ([HeardleGame.svelte:1363](src/lib/HeardleGame.svelte:1363))
+1. **Allow DRM in the widget iframe** ([Mp3dleGame.svelte:1363](src/lib/Mp3dleGame.svelte:1363))
    `allow="autoplay; encrypted-media"`. This is the one-line fix for Chrome, Edge and Android
    Chrome.
 2. **Detect "can't play" instead of hanging silently.** After any `play()` request, start a watchdog:
@@ -50,19 +50,19 @@ All in [HeardleGame.svelte](src/lib/HeardleGame.svelte) unless noted.
    read `item.media.transcodings` and store `drm: true` when every transcoding is
    `*-encrypted-hls`. This feeds step 2's error copy and the pool decision below. Bump the catalog
    `schema` query param in [+page.ts:20](src/routes/+page.ts:20) so cached catalogs refresh.
-4. **Always enforce the clip cutoff** ([HeardleGame.svelte:494-502](src/lib/HeardleGame.svelte:494)).
+4. **Always enforce the clip cutoff** ([Mp3dleGame.svelte:494-502](src/lib/Mp3dleGame.svelte:494)).
    `PLAY_PROGRESS` returns early when `!isPlaying`, so a lost or late `PLAY` event lets the clip
    run past its limit. Enforce `limit` regardless of `isPlaying`, and set `isPlaying = true` from
    progress events if they arrive first.
-5. **Remove (or gate) the warm-up** ([HeardleGame.svelte:515-536](src/lib/HeardleGame.svelte:515)).
+5. **Remove (or gate) the warm-up** ([Mp3dleGame.svelte:515-536](src/lib/Mp3dleGame.svelte:515)).
    It calls `play()` before any user gesture: autoplay blocks it on mobile, it's audible on iOS
    (`setVolume` is ignored there), and a `PLAY` that arrives after the 1s window flips the UI into
    a phantom "playing" state. Mark the widget ready on `READY` + `getDuration`, and do any priming
    inside the first real tap.
-6. **`crypto.randomUUID` fallback** ([HeardleGame.svelte:940](src/lib/HeardleGame.svelte:940)).
+6. **`crypto.randomUUID` fallback** ([Mp3dleGame.svelte:940](src/lib/Mp3dleGame.svelte:940)).
    It's undefined on `http://192.168.x.x` (phone testing) and older Safari, so **Play another**
    throws. Fall back to `crypto.getRandomValues` → hex.
-7. **Fix suggestion taps on iOS/Safari** ([HeardleGame.svelte:1029-1043](src/lib/HeardleGame.svelte:1029)).
+7. **Fix suggestion taps on iOS/Safari** ([Mp3dleGame.svelte:1029-1043](src/lib/Mp3dleGame.svelte:1029)).
    Safari doesn't focus buttons on tap, so `focusout.relatedTarget` is `null`, the list closes, and
    the tap lands on nothing. Add `on:pointerdown|preventDefault` on the listbox (keeps focus in the
    input) and select on `click`.
@@ -71,7 +71,7 @@ All in [HeardleGame.svelte](src/lib/HeardleGame.svelte) unless noted.
    Use `navigating` from `$app/state` to show a pending state on the chosen result, disable other
    results, and avoid double-taps.
 9. **Friendlier slow-network handling.** The 15s widget timeout
-   ([HeardleGame.svelte:308](src/lib/HeardleGame.svelte:308)) shows a hard error. Offer **Retry**,
+   ([Mp3dleGame.svelte:308](src/lib/Mp3dleGame.svelte:308)) shows a hard error. Offer **Retry**,
    which re-creates the iframe instead of a full page reload.
 
 **Decision for you:** should DRM-only tracks be **excluded from the daily answer pool** (they stay
@@ -90,17 +90,17 @@ My recommendation: ship steps 1 to 9 first, then decide based on how often the s
 
 1. **One flex column that fills the screen and doesn't overflow.**
    - [+page.svelte:135](src/routes/+page.svelte:135): `.game-view { display:flex; flex-direction:column; min-height:100svh }`.
-   - [HeardleGame.svelte:1292](src/lib/HeardleGame.svelte:1292): drop `min-h-[100dvh]` on
+   - [Mp3dleGame.svelte:1292](src/lib/Mp3dleGame.svelte:1292): drop `min-h-[100dvh]` on
      `<main>` and use `flex: 1`. That removes the constant overflow of about 70px.
    - Use `svh` (stable) instead of `dvh` for `min-height` everywhere, so layout doesn't jump when
      the mobile URL bar collapses. Keep `dvh` only for modal `max-height`.
 2. **No iOS focus-zoom:** inputs must be at least 16px on mobile. The guess input is `text-sm`
-   (14px) at [HeardleGame.svelte:2016](src/lib/HeardleGame.svelte:2016). Use `text-base`.
+   (14px) at [Mp3dleGame.svelte:2016](src/lib/Mp3dleGame.svelte:2016). Use `text-base`.
 3. **Replace `scrollIntoView`** for the active suggestion
-   ([HeardleGame.svelte:999-1001](src/lib/HeardleGame.svelte:999)). It scrolls every ancestor,
+   ([Mp3dleGame.svelte:999-1001](src/lib/Mp3dleGame.svelte:999)). It scrolls every ancestor,
    including the page. Adjust the listbox's own `scrollTop` instead.
 4. **Modal scroll lock.** The overlays
-   ([HeardleGame.svelte:1141](src/lib/HeardleGame.svelte:1141), [1176](src/lib/HeardleGame.svelte:1176))
+   ([Mp3dleGame.svelte:1141](src/lib/Mp3dleGame.svelte:1141), [1176](src/lib/Mp3dleGame.svelte:1176))
    let the page scroll behind them on touch. Move to native `<dialog>` + `showModal()`; that gives
    focus trapping, Esc and `inert` for free and lets you delete `handleDialogKeydown`. Add
    `overscroll-behavior: contain` and lock `html { overflow: hidden }` while open.
@@ -126,8 +126,8 @@ and the em-dash copy are gone. Keep it that way: flat colors, text labels on but
 play/pause shapes only.
 
 There are currently **three palettes**: `--app-*` in [+page.svelte:104](src/routes/+page.svelte:104),
-`--page-*`/`--deck-*` in [HeardleGame.svelte:2108](src/lib/HeardleGame.svelte:2108), and a JS
-`COLORS` object ([HeardleGame.svelte:42](src/lib/HeardleGame.svelte:42)). On top of those are about
+`--page-*`/`--deck-*` in [Mp3dleGame.svelte:2108](src/lib/Mp3dleGame.svelte:2108), and a JS
+`COLORS` object ([Mp3dleGame.svelte:42](src/lib/Mp3dleGame.svelte:42)). On top of those are about
 40 inline `style="color: {darkMode ? '#bbb' : …}"` ternaries.
 
 - Move one token set into [app.css](src/app.css) under `:root` / `:root[data-theme="dark"]`:
@@ -150,15 +150,15 @@ There are currently **three palettes**: `--app-*` in [+page.svelte:104](src/rout
 - **Bigger, clearer play button** on mobile (64px), with a spinner while loading instead of a
   greyed button plus pulsing text.
 - Keep the status line ("1s unlocked · 6 guesses left") on one row at narrow widths. Stacking it
-  at < 520px ([HeardleGame.svelte:2478](src/lib/HeardleGame.svelte:2478)) wastes a line.
-- Title: "Heardle - glaive" → "glaive · Heardle" (no hyphen-as-dash), also in the share text.
+  at < 520px ([Mp3dleGame.svelte:2478](src/lib/Mp3dleGame.svelte:2478)) wastes a line.
+- Title: "mp3dle - glaive" → "glaive · mp3dle" (no hyphen-as-dash), also in the share text.
 - **Turntable responsiveness.** The platter is a fixed 400px at `left: 40px`, while the tonearm
-  SVG scales with the column ([HeardleGame.svelte:1430-1500](src/lib/HeardleGame.svelte:1430)),
+  SVG scales with the column ([Mp3dleGame.svelte:1430-1500](src/lib/Mp3dleGame.svelte:1430)),
   so they drift out of alignment as the column width changes. Build the turntable on one
   `aspect-ratio` box with `%` / container-query units, with the tonearm in the same coordinate
   space.
 - **Seek bar semantics.** The game-over seek control is a `<button role="slider">`
-  ([HeardleGame.svelte:1832](src/lib/HeardleGame.svelte:1832)). Make it a `div role="slider"
+  ([Mp3dleGame.svelte:1832](src/lib/Mp3dleGame.svelte:1832)). Make it a `div role="slider"
 tabindex="0"` (or a styled `input type=range`) and show a visible thumb.
 - Result card: larger artwork on mobile, and **Play another** as the primary action.
   **Share** shows "Copied!" inline as a toast that fades out.
@@ -193,7 +193,7 @@ tabindex="0"` (or a styled `input type=range`) and show a visible thumb.
 
 ## Phase 4: Code health that makes the above sustainable
 
-[HeardleGame.svelte](src/lib/HeardleGame.svelte) is 2,632 lines that mix Tailwind, inline styles
+[Mp3dleGame.svelte](src/lib/Mp3dleGame.svelte) is 2,632 lines that mix Tailwind, inline styles
 and scoped CSS. Split it while doing Phases 1 to 3:
 
 - `lib/player/soundcloud-player.ts`: loads `api.js`, owns the widget, and exposes

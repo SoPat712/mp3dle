@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { onMount, tick } from 'svelte';
-	import HeardleGame from '#lib/HeardleGame.svelte';
+	import Mp3dleGame from '#lib/Mp3dleGame.svelte';
 	import { loadFavorites, saveFavorites, type Favorite } from '#lib/favorites.js';
 	import { createEmptyStats, type Stats } from '#lib/game-state.js';
 	import ArtistPic from '#lib/retro/ArtistPic.svelte';
@@ -33,7 +33,7 @@
 		label: string;
 		icon: 'record' | 'folder' | 'text' | 'sheet' | 'practice';
 	}[] = [
-		{ id: 'player', label: 'Heardle Player', icon: 'record' },
+		{ id: 'player', label: 'mp3dle Player', icon: 'record' },
 		{ id: 'find', label: 'Find Artist', icon: 'folder' },
 		{ id: 'readme', label: 'readme.txt', icon: 'text' },
 		{ id: 'stats', label: 'stats.xls', icon: 'sheet' },
@@ -78,7 +78,7 @@
 	let volume = Number(load(VOLUME_KEY) ?? 80);
 	if (!(volume >= 0 && volume <= 100)) volume = 80;
 	let clock = '';
-	let game: HeardleGame | undefined;
+	let game: Mp3dleGame | undefined;
 	let stats: Stats = createEmptyStats(6);
 	let timeLeft = '';
 
@@ -94,7 +94,7 @@
 	$: statsTitle = catalog ? `stats.xls - ${catalog.artist.username}` : 'stats.xls';
 	$: tasks = (
 		[
-			['player', 'Heardle Player'],
+			['player', 'mp3dle Player'],
 			['find', 'Find Artist'],
 			['stats', statsTitle],
 			['readme', 'readme.txt - Notepad']
@@ -458,7 +458,7 @@
 
 		{#if catalog}
 			{#key `${catalog.artist.id}:${practiceKey || 'daily'}`}
-				<HeardleGame
+				<Mp3dleGame
 					bind:this={game}
 					bind:stats
 					bind:timeLeft
@@ -489,11 +489,11 @@
 
 	{#if startOpen}
 		<div class="start-menu w95">
-			<div class="start-side" aria-hidden="true">Heardle</div>
+			<div class="start-side" aria-hidden="true">mp3dle</div>
 			<div class="start-items">
 				{#if !mobile}
 					<button type="button" class="menu-item" on:click={() => openWindow('player')}>
-						Heardle Player
+						mp3dle Player
 					</button>
 				{/if}
 				<button type="button" class="menu-item" on:click={() => openWindow('find')}>

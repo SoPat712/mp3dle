@@ -31,7 +31,7 @@
 </script>
 
 <svelte:head>
-	<title>{data.catalog ? `${data.catalog.artist.username} Heardle` : 'SoundCloud Heardle'}</title>
+	<title>{data.catalog ? `${data.catalog.artist.username} mp3dle` : 'mp3dle'}</title>
 </svelte:head>
 
 <div class:dark-mode={darkMode} class="app-shell">

@@ -473,7 +473,7 @@
 		const rows = attemptInfos.map((attempt) => squares[attempt.status]).join('');
 		const url = new URL(window.location.href);
 		url.searchParams.delete('practice');
-		return `Heardle - ${artistName} ${practice ? 'Practice' : today} ${resultLabel}\n${rows}\n${url.href}`;
+		return `mp3dle - ${artistName} ${practice ? 'Practice' : today} ${resultLabel}\n${rows}\n${url.href}`;
 	}
 
 	async function share() {
@@ -504,7 +504,7 @@
 ></iframe>
 
 {#if error && !errorHidden && visible}
-	<MessageBox title="Heardle Player" icon="error" onDismiss={() => (errorHidden = true)}>
+	<MessageBox title="mp3dle Player" icon="error" onDismiss={() => (errorHidden = true)}>
 		{error}
 		<svelte:fragment slot="buttons">
 			<button type="button" class="b95" on:click={() => window.location.reload()}>Retry</button>
@@ -520,7 +520,7 @@
 	bind:this={element}
 	class="player"
 	class:gone={!visible}
-	aria-label="Heardle Player"
+	aria-label="mp3dle Player"
 	tabindex="-1"
 	style:left="{x}px"
 	style:top="{y}px"
@@ -536,7 +536,7 @@
 			<circle cx="15" cy="15" r="1.5" fill="#fff" />
 		</svg>
 		<div class="logo">
-			<span class="logo-name">HEARDLE</span>
+			<span class="logo-name">MP3DLE</span>
 			<span class="logo-version">PLAYER 2.1</span>
 		</div>
 		<span class="head-gap"></span>
