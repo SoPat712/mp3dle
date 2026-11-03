@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Desktop from '$lib/retro/Desktop.svelte';
-	import { load, save } from '$lib/storage';
+	import Desktop from '#lib/retro/Desktop.svelte';
+	import { load, save } from '#lib/storage.js';
 	import type { PageData } from './$types';
 
 	export let data: PageData;

@@ -36,7 +36,7 @@ tracks, blocked tracks, and clips shorter than 17 seconds are excluded.
 
 ## Run locally
 
-Requirements: Node.js 22.12+ (see `.nvmrc`) and npm 10+.
+Requirements: Node.js 24+ (see `.nvmrc`) and npm 10+.
 
 ```bash
 npm install

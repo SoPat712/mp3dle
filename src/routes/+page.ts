@@ -1,5 +1,5 @@
 import type { PageLoad } from './$types';
-import type { TrackCatalog } from '$lib/tracks';
+import type { TrackCatalog } from '#lib/tracks.js';
 
 // the whole game needs window and localstorage, so no server rendering
 export const ssr = false;

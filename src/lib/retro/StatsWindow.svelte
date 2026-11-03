@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Stats } from '$lib/game-state';
+	import type { Stats } from '#lib/game-state.js';
 
 	export let stats: Stats;
 	export let nextLine = '';

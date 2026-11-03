@@ -1,4 +1,4 @@
-import { load, save } from '$lib/storage';
+import { load, save } from '#lib/storage.js';
 
 export type Favorite = {
 	username: string;

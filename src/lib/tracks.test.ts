@@ -5,8 +5,8 @@ import {
 	getGuessTracks,
 	getPracticeTrack,
 	type Track
-} from '$lib/tracks';
-import { parsePublicClientId, parsePublicProfileAccess } from '$lib/server/soundcloud';
+} from '#lib/tracks.js';
+import { parsePublicClientId, parsePublicProfileAccess } from '#lib/server/soundcloud.js';
 
 const track = (title: string, slug: string): Track => ({
 	title,

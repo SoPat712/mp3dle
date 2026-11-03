@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dragHandle } from '$lib/retro/drag';
+	import { dragHandle } from '#lib/retro/drag.js';
 
 	export let label: string;
 	export let title: string;
