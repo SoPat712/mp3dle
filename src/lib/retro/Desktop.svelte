@@ -30,6 +30,7 @@
 	const widths = { player: 700, stats: 300, readme: 470, find: 480, about: 440, tipjar: 420 };
 	const allWindows = Object.keys(widths) as WindowId[];
 	const LOAD_BLOCKS = 20;
+	const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 	const desktopIcons: {
 		id: IconId;
 		label: string;
@@ -203,8 +204,10 @@
 
 	function startPractice() {
 		startOpen = false;
-		if (catalog) game?.startPractice();
-		else notice = { title: 'practice.exe', text: 'Pick an artist first.' };
+		if (catalog) {
+			openWindow('player');
+			game?.startPractice();
+		} else notice = { title: 'practice.exe', text: 'Pick an artist first.' };
 	}
 
 	function toggleStart() {
@@ -294,8 +297,14 @@
 			loadedBlocks = Math.min(loadedBlocks + 1, LOAD_BLOCKS - 1);
 		}, 350);
 
-		await goto(resolve(`/?artist=${encodeURIComponent(artist.permalink)}`));
+		// cached artists load instantly, so let the bar get going before it closes
+		await Promise.all([
+			goto(resolve(`/?artist=${encodeURIComponent(artist.permalink)}`)),
+			wait(750)
+		]);
 		clearInterval(loadTimer);
+		loadedBlocks = LOAD_BLOCKS;
+		await wait(250);
 		loadingArtist = '';
 
 		// no catalog means it failed, find artist is where the error shows
@@ -544,8 +553,10 @@
 					onOpenReadme={() => openWindow('readme')}
 					onOpenStats={() => openWindow('stats')}
 					onOpenFind={() => openWindow('find')}
-					onNeedFinish={() =>
-						(notice = { title: 'practice.exe', text: "Finish today's song first." })}
+					onNeedFinish={() => {
+						openWindow('player');
+						notice = { title: 'practice.exe', text: "Finish today's song first." };
+					}}
 				/>
 			{/key}
 		{/if}

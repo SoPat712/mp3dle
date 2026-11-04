@@ -14,8 +14,8 @@
 		Press the star on the player to keep an artist on your desktop, or in the Start menu on a phone.
 	</p>
 	<p class="gap-wide">
-		Your progress, settings, selected artist, and stats stay in this browser. No analytics,
-		accounts, or cross-day identifier are used. Artist metadata and audio load from SoundCloud.
+		Your games, stats, favorites and settings stay in this browser. There are no accounts or
+		analytics. Artist info and audio come from SoundCloud.
 	</p>
 	{#if catalogLine}<p class="gap-wide">{catalogLine}</p>{/if}
 </div>
