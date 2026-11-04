@@ -5,6 +5,7 @@ import {
 	getDailyTrack,
 	getGuessTracks,
 	getPracticeTrack,
+	normalizeTrackTitle,
 	type Track
 } from '#lib/tracks.js';
 import { parsePublicClientId, parsePublicProfileAccess } from '#lib/server/soundcloud.js';
@@ -30,10 +31,156 @@ describe('catalog cleanup', () => {
 		expect(cleaned.map(({ title }) => title)).toEqual(['Duet (feat. Somebody)', 'Live Forever']);
 	});
 
+	it.each([
+		'Blank Space (Commentary)',
+		'Radio Outro (Commentary)',
+		'Blank Space (Voice Memo)',
+		'I Wish You Would (Voice Memo)',
+		'Opalite (Track by Track)',
+		'CANCELLED! (Track by Track)',
+		'august (the long pond studio sessions)',
+		'exile (the long pond studio sessions) [feat. Bon Iver]',
+		"Should've Said No (The 3D Concert Experience)",
+		'All Too Well (10 Minute Version) (The Short Film)',
+		'glaive & kurtains - The Troubles (cdq snippet)',
+		'glaive - weird (lq snippet)',
+		'glaive - j (snippet)',
+		'kurtains - violent (feat. glaive & ericdoa)[snippet] FULL LEAK IN DESCRIPTION',
+		'glaive - feathered indians (cover)',
+		'glaive - stay (cover)',
+		"Cate's Brother (BRELAND's Version)",
+		"Cate's Brother (Matt's Version)",
+		'Message In A Bottle (Fat Max G Remix) (Taylor’s Version)',
+		'Fortnight (Acoustic Version) [feat. Post Malone]',
+		'I Can Do It With a Broken Heart (Instrumental)',
+		'Cruel Summer (Live from TS | The Eras Tour)',
+		'Patient Zero (Piano Version)'
+	])('removes %s from the catalog', (title) => {
+		expect(filterCatalogTracks([track(title, 'song')])).toEqual([]);
+	});
+
+	it.each([
+		"Love Story (Taylor's Version)",
+		"Say Don't Go (Taylor's Version) (From The Vault)",
+		'Electric Touch (Taylor’s Version) (From The Vault) [feat. Fall Out Boy]',
+		'Mr. Perfectly Fine (Taylor’s Version) (From The Vault)',
+		'You’re Losing Me (From The Vault)',
+		'it’s time to go (bonus track)',
+		'right where you left me (bonus track)',
+		'Carolina (From The Motion Picture “Where The Crawdads Sing”)',
+		'Beautiful Ghosts (From The Motion Picture Soundtrack "Cats")',
+		'Safe & Sound (from The Hunger Games Soundtrack) [feat. The Civil Wars]',
+		'Anti-Hero (feat. Bleachers)',
+		'If You Let Me (with Marcus Mumford)',
+		'sticks (p. heartdept)',
+		"glaive - there's a little bit farther left to go (v2)",
+		'kurtains - violent (feat. glaive & ericdoa) [full song]',
+		'Old Freight Train Interlude',
+		'Duet (feat. Somebody)',
+		'Live Forever',
+		"Love Story [Taylor's Version]",
+		'Love Story [Taylor’s Version]',
+		"Love Story (TAYLOR'S VERSION)"
+	])('keeps %s in the catalog', (title) => {
+		const song = track(title, 'song');
+		expect(filterCatalogTracks([song])).toEqual([song]);
+	});
+
+	it.each([
+		'commentary',
+		'voice memo',
+		'track by track',
+		'interview',
+		'session',
+		'sessions',
+		'concert',
+		'rehearsal',
+		'short film',
+		'snippet',
+		'teaser',
+		'preview',
+		'cover',
+		'extended'
+	])('removes bracketed %s qualifiers even when glued or unclosed', (qualifier) => {
+		for (const title of [
+			`Song (${qualifier})`,
+			`Song[${qualifier}]`,
+			`Song (${qualifier}`,
+			`Song[${qualifier}`
+		]) {
+			expect(filterCatalogTracks([track(title, 'song')])).toEqual([]);
+		}
+	});
+
+	it.each(['commentary', 'voice memo', 'track by track', 'interview'])(
+		'removes %s dash suffixes',
+		(qualifier) => {
+			expect(filterCatalogTracks([track(`Song - ${qualifier}`, 'song')])).toEqual([]);
+		}
+	);
+
+	it.each([
+		'session',
+		'sessions',
+		'concert',
+		'rehearsal',
+		'short film',
+		'snippet',
+		'teaser',
+		'preview',
+		'cover',
+		'extended'
+	])('keeps artist uploads whose titles start with %s', (word) => {
+		const song = track(`Artist - ${word} song`, 'song');
+		expect(filterCatalogTracks([song])).toEqual([song]);
+	});
+
+	it.each([
+		"Song (Taylor's Version Deluxe)",
+		"Song (Not Taylor's Version)",
+		"Song [Taylor's Version] (Remix)",
+		"Song (Taylor's Version) - Acoustic"
+	])('only exempts the exact taylor rerecording label in %s', (title) => {
+		expect(filterCatalogTracks([track(title, 'song')])).toEqual([]);
+	});
+
 	it('collapses duplicate titles and prefers an unsuffixed canonical slug', () => {
 		expect(
 			filterCatalogTracks([track('Same Song', 'same-song-2'), track('Same Song', 'same-song')])
 		).toEqual([track('Same Song', 'same-song')]);
+	});
+
+	it.each([
+		[
+			track('Snow On The Beach (feat. Lana Del Rey)', 'snow-on-the-beach'),
+			track('Snow On The Beach (feat. More Lana Del Rey)', 'snow-on-the-beach-more-lana')
+		],
+		[
+			track('Love Story', 'love-story'),
+			track("Love Story (Taylor's Version)", 'love-story-taylors-version')
+		]
+	])('dedupes %s and %s regardless of catalog order', (canonical, duplicate) => {
+		expect(filterCatalogTracks([duplicate, canonical])).toEqual([canonical]);
+		expect(filterCatalogTracks([canonical, duplicate])).toEqual([canonical]);
+	});
+
+	it.each([
+		'Song (feat. Somebody)',
+		'Song [feat. Somebody]',
+		'Song (ft. Somebody)',
+		'Song (with Somebody)',
+		'Song (From The Vault)',
+		'Song (Taylor’s Version) (From The Vault) [feat. Somebody]',
+		"Song [Taylor's Version]"
+	])('ignores credits and rerecording labels when deduping %s', (title) => {
+		const canonical = track(title, 'song');
+		expect(filterCatalogTracks([track('Song', 'song-2'), canonical])).toEqual([canonical]);
+	});
+
+	it('keeps credits and rerecording labels in guess normalization', () => {
+		expect(normalizeTrackTitle('Song (Taylor’s Version) (From The Vault) [feat. Somebody]')).toBe(
+			'song taylor s version from the vault feat somebody'
+		);
 	});
 
 	it('returns alphabetized unique guesses', () => {
