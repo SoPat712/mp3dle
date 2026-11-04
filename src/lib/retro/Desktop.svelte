@@ -503,11 +503,13 @@
 				z={10 + order.indexOf('find')}
 				focused={focus === 'find'}
 				{mobile}
-				closeLabel={catalog ? 'Close Find Artist' : ''}
+				closeLabel={!mobile || catalog ? 'Close Find Artist' : ''}
+				minimiseLabel="Minimise Find Artist"
 				bind:element={elements.find}
 				onFocus={() => raise('find')}
 				onMove={(x, y) => moveWindow('find', x, y)}
 				onClose={() => closeWindow('find')}
+				onMinimise={() => minimiseWindow('find')}
 			>
 				<FindArtist
 					hasArtist={Boolean(catalog)}
