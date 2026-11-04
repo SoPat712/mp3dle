@@ -1,13 +1,73 @@
 <script lang="ts">
+	import { onDestroy, onMount } from 'svelte';
+
 	export let spinning = false;
 	export let artwork = '';
 	export let label = '?';
+	export let position = 0;
+	export let length = 0;
+
+	let mounted = false;
+	let reducedMotion = false;
+	let displayedPosition = 0;
+	let anchorPosition = 0;
+	let anchorTime = 0;
+	let frame: number | undefined;
+
+	function stopAnimation() {
+		if (frame !== undefined) cancelAnimationFrame(frame);
+		frame = undefined;
+	}
+
+	function animate(now: number) {
+		displayedPosition = anchorPosition + (now - anchorTime);
+		frame = requestAnimationFrame(animate);
+	}
+
+	function updateMotion(
+		position: number,
+		spinning: boolean,
+		reducedMotion: boolean,
+		mounted: boolean
+	) {
+		if (!mounted || !spinning || reducedMotion) {
+			stopAnimation();
+			displayedPosition = position;
+			return;
+		}
+
+		const now = performance.now();
+		const predicted = anchorPosition + (now - anchorTime);
+		// keep small timing corrections from nudging the record backwards
+		anchorPosition =
+			frame === undefined || Math.abs(predicted - position) > 300 ? position : predicted;
+		anchorTime = now;
+		displayedPosition = anchorPosition;
+		if (frame === undefined) frame = requestAnimationFrame(animate);
+	}
+
+	$: updateMotion(position, spinning, reducedMotion, mounted);
+	// 33 1/3 rpm is 200 degrees a second
+	$: recordAngle = displayedPosition * 0.2;
+	$: progress = length > 0 ? Math.max(0, Math.min(position / length, 1)) : 0;
+	$: tonearmAngle = !spinning && position === 0 ? -6 : 3.4 + (26.4 - 3.4) * progress;
+
+	onMount(() => {
+		const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+		const updateReducedMotion = () => (reducedMotion = media.matches);
+		updateReducedMotion();
+		media.addEventListener('change', updateReducedMotion);
+		mounted = true;
+		return () => media.removeEventListener('change', updateReducedMotion);
+	});
+
+	onDestroy(stopAnimation);
 </script>
 
 <div class="panel-wrap" aria-hidden="true">
 	<div class="panel">
 		<div class="platter-ring"></div>
-		<div class="record" class:spinning>
+		<div class="record" style:transform={`rotate(${recordAngle}deg)`}>
 			<div class="record-label">
 				{#if artwork}
 					<img src={artwork} alt="" />
@@ -17,7 +77,13 @@
 			</div>
 			<div class="record-hole"></div>
 		</div>
-		<svg class="tonearm" class:on-record={spinning} width="62" height="148" viewBox="0 0 62 148">
+		<svg
+			class="tonearm"
+			style:transform={`rotate(${tonearmAngle}deg)`}
+			width="62"
+			height="148"
+			viewBox="0 0 62 148"
+		>
 			<circle cx="44" cy="18" r="11" fill="#5f646c" stroke="#22262c" />
 			<circle cx="44" cy="18" r="4" fill="#15171a" />
 			<path
@@ -134,11 +200,7 @@
 		right: 0;
 		top: 0;
 		transform-origin: 44px 18px;
-		transform: rotate(-6deg);
 		transition: transform 300ms;
-	}
-	.tonearm.on-record {
-		transform: rotate(14deg);
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.tonearm {
@@ -152,22 +214,6 @@
 		}
 		.panel {
 			transform: scale(0.7143);
-		}
-	}
-	.record {
-		animation: spin 1.8s linear infinite paused;
-	}
-	.record.spinning {
-		animation-play-state: running;
-	}
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.record {
-			animation: none;
 		}
 	}
 </style>

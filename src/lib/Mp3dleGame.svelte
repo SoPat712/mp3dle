@@ -586,6 +586,8 @@
 	<div class="deck">
 		<Turntable
 			spinning={playing}
+			{position}
+			length={songLength}
 			label={gameOver ? initials : '?'}
 			artwork={gameOver && artwork ? artwork.replace('-large', '-t200x200') : ''}
 		/>
