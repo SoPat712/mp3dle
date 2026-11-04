@@ -17,8 +17,8 @@
 		<div class="copy">
 			<strong>mp3dle is free and has no ads.</strong>
 			<p>
-				If it's become part of your day, you can leave me a tip. Nothing in the game changes either
-				way.
+				If it's become part of your day, you can leave me a tip! It has no effect on gameplay, just
+				on my will to keep refining this app! :)
 			</p>
 		</div>
 	</div>
@@ -31,9 +31,7 @@
 			</label>
 		{/each}
 	</fieldset>
-	<p class="muted">
-		You pick the amount on that page, in a new tab. Payment happens there, never in mp3dle.
-	</p>
+	<p class="muted">You choose the amount on that page, in a new tab. Payments happen there too!</p>
 	<div class="buttons">
 		<a class="b95 default" href={`https://${selected}`} target="_blank" rel="noopener noreferrer"
 			>Leave a tip...</a
