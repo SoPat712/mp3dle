@@ -35,12 +35,12 @@
 				stroke-linecap="round"
 			/>
 			<rect
-				x="12"
-				y="116"
+				x="14.5"
+				y="117.5"
 				width="15"
 				height="9"
 				rx="1"
-				transform="rotate(-48 19 120)"
+				transform="rotate(-49 22 122)"
 				fill="#c43a84"
 				stroke="#22262c"
 			/>

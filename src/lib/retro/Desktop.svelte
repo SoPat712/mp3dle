@@ -534,6 +534,7 @@
 						<label for="start-volume">Volume</label>
 						<input
 							id="start-volume"
+							class="trackbar"
 							type="range"
 							min="0"
 							max="100"
@@ -576,14 +577,17 @@
 	{#if volumeOpen}
 		<div class="volume-popup w95">
 			<label for="tray-volume">Volume</label>
-			<input
-				id="tray-volume"
-				type="range"
-				min="0"
-				max="100"
-				value={volume}
-				on:input={handleVolume}
-			/>
+			<div class="tray-track">
+				<input
+					id="tray-volume"
+					class="trackbar"
+					type="range"
+					min="0"
+					max="100"
+					value={volume}
+					on:input={handleVolume}
+				/>
+			</div>
 		</div>
 	{/if}
 
@@ -860,9 +864,87 @@
 		font-size: 14px;
 	}
 
-	.start-volume input {
+	.trackbar {
+		appearance: none;
+		-webkit-appearance: none;
+		height: 21px;
+		background: transparent;
+		margin: 0;
+		cursor: pointer;
+	}
+
+	.trackbar::-webkit-slider-runnable-track {
+		box-sizing: border-box;
+		height: 4px;
+		border: 1px solid;
+		border-color: var(--shade) var(--hi) var(--hi) var(--shade);
+		border-radius: 0;
+		box-shadow: inset 1px 1px 0 var(--dark);
+		background: var(--face);
+	}
+
+	.trackbar::-moz-range-track {
+		box-sizing: border-box;
+		height: 4px;
+		border: 1px solid;
+		border-color: var(--shade) var(--hi) var(--hi) var(--shade);
+		border-radius: 0;
+		box-shadow: inset 1px 1px 0 var(--dark);
+		background: var(--face);
+	}
+
+	.trackbar::-moz-range-progress {
+		background: transparent;
+	}
+
+	.trackbar::-webkit-slider-thumb {
+		appearance: none;
+		-webkit-appearance: none;
+		width: 11px;
+		height: 21px;
+		margin-top: -9.5px;
+		border: 0;
+		border-radius: 0;
+		background: var(--face);
+		box-shadow:
+			inset -1px -1px 0 var(--dark),
+			inset 1px 1px 0 var(--hi),
+			inset -2px -2px 0 var(--shade),
+			inset 2px 2px 0 var(--lite);
+	}
+
+	.trackbar::-moz-range-thumb {
+		width: 11px;
+		height: 21px;
+		border: 0;
+		border-radius: 0;
+		background: var(--face);
+		box-shadow:
+			inset -1px -1px 0 var(--dark),
+			inset 1px 1px 0 var(--hi),
+			inset -2px -2px 0 var(--shade),
+			inset 2px 2px 0 var(--lite);
+	}
+
+	.trackbar:focus-visible {
+		outline: 1px dotted var(--w-text);
+		outline-offset: 2px;
+	}
+
+	.start-volume .trackbar {
 		display: block;
 		width: 100%;
+		height: 28px;
+	}
+
+	.start-volume .trackbar::-webkit-slider-thumb {
+		width: 16px;
+		height: 28px;
+		margin-top: -13px;
+	}
+
+	.start-volume .trackbar::-moz-range-thumb {
+		width: 16px;
 		height: 28px;
 	}
 
@@ -880,11 +962,20 @@
 		font-size: 12px;
 	}
 
-	.volume-popup input {
-		width: 20px;
+	.tray-track {
+		position: relative;
+		width: 21px;
 		height: 110px;
-		writing-mode: vertical-lr;
-		direction: rtl;
+		flex-shrink: 0;
+	}
+
+	.tray-track .trackbar {
+		position: absolute;
+		width: 110px;
+		height: 21px;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%) rotate(-90deg);
 	}
 
 	.taskbar {

@@ -69,10 +69,6 @@
 	opacity: 1;
 }
 
-.app-shell input[type='range'] {
-	accent-color: #c43a84;
-}
-
 .sr-only-retro {
 	position: absolute;
 	width: 1px;
