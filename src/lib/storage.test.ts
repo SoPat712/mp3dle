@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { moveOldKeys } from './storage';
+import { listEntries, moveOldKeys } from './storage';
 
 // just enough of localStorage for moveOldKeys
 function fakeStorage(entries: Record<string, string>) {
@@ -49,5 +49,39 @@ describe('moveOldKeys', () => {
 	it('does nothing when storage is off', () => {
 		vi.stubGlobal('localStorage', undefined);
 		expect(() => moveOldKeys()).not.toThrow();
+	});
+});
+
+describe('listEntries', () => {
+	it('lists only matching keys and preserves empty values', () => {
+		vi.stubGlobal(
+			'localStorage',
+			fakeStorage({
+				'mp3dle:theme': 'dark',
+				'mp3dle:favorites': '',
+				'other:theme': 'light'
+			})
+		);
+		expect(listEntries('mp3dle:')).toEqual([
+			['mp3dle:theme', 'dark'],
+			['mp3dle:favorites', '']
+		]);
+	});
+
+	it('discards a partial listing if storage throws', () => {
+		const storage = fakeStorage({ 'mp3dle:theme': 'dark', 'mp3dle:volume': '80' });
+		vi.stubGlobal('localStorage', {
+			...storage,
+			getItem: (key: string) => {
+				if (key === 'mp3dle:volume') throw new Error('storage unavailable');
+				return storage.getItem(key);
+			}
+		});
+		expect(listEntries('mp3dle:')).toEqual([]);
+	});
+
+	it('returns an empty list when storage is unavailable', () => {
+		vi.stubGlobal('localStorage', undefined);
+		expect(listEntries('mp3dle:')).toEqual([]);
 	});
 });

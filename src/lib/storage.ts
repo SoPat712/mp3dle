@@ -24,6 +24,21 @@ export function remove(key: string) {
 	}
 }
 
+export function listEntries(prefix: string): [string, string][] {
+	try {
+		const entries: [string, string][] = [];
+		for (let i = 0; i < localStorage.length; i++) {
+			const key = localStorage.key(i);
+			if (key === null || !key.startsWith(prefix)) continue;
+			const value = localStorage.getItem(key);
+			if (value !== null) entries.push([key, value]);
+		}
+		return entries;
+	} catch {
+		return [];
+	}
+}
+
 // the app used to be called soundcloud heardle. move anything saved under the old name over, once
 const OLD_PREFIX = 'soundcloud-heardle:';
 

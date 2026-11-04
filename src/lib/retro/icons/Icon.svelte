@@ -5,6 +5,8 @@
 		| 'text'
 		| 'sheet'
 		| 'practice'
+		| 'about'
+		| 'jar'
 		| 'start'
 		| 'speaker'
 		| 'error'
@@ -42,6 +44,26 @@
 		<circle cx="17" cy="17" r="14" fill="#111" />
 		<circle cx="17" cy="17" r="5" fill="#c43a84" />
 		<path d="M24 4l6 2-2 6" fill="none" stroke="#fff" stroke-width="2" />
+	</svg>
+{:else if name === 'about'}
+	<svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34">
+		<rect x="3" y="4" width="28" height="22" rx="2" fill="var(--field)" stroke="var(--p-muted)" />
+		<path d="M10 26l-2 6 7-6" fill="var(--field)" stroke="var(--p-muted)" />
+		<circle cx="17" cy="10" r="2.2" fill="var(--link)" />
+		<rect x="15" y="14" width="4" height="9" fill="var(--link)" />
+	</svg>
+{:else if name === 'jar'}
+	<svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34">
+		<rect x="10" y="3" width="14" height="4" fill="var(--shade)" stroke="var(--p-muted)" />
+		<path
+			d="M9 8h16l2 4v17a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V12z"
+			fill="var(--field-alt)"
+			stroke="var(--p-muted)"
+		/>
+		<path d="M9.5 12h15" stroke="var(--hi)" stroke-width="1.5" />
+		<circle cx="13" cy="25" r="3.2" fill="var(--unlock)" stroke="var(--p-muted)" />
+		<circle cx="20" cy="25" r="3.2" fill="var(--unlock)" stroke="var(--p-muted)" />
+		<circle cx="16.5" cy="20" r="3.2" fill="var(--unlock)" stroke="var(--p-muted)" />
 	</svg>
 {:else if name === 'start'}
 	<svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18">

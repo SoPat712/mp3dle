@@ -5,12 +5,14 @@
 	import Mp3dleGame from '#lib/Mp3dleGame.svelte';
 	import { loadFavorites, saveFavorites, type Favorite } from '#lib/favorites.js';
 	import { createEmptyStats, type Stats } from '#lib/game-state.js';
+	import AboutWindow from '#lib/retro/AboutWindow.svelte';
 	import ArtistPic from '#lib/retro/ArtistPic.svelte';
 	import FindArtist from '#lib/retro/FindArtist.svelte';
 	import Icon from '#lib/retro/icons/Icon.svelte';
 	import MessageBox from '#lib/retro/MessageBox.svelte';
 	import ReadmeWindow from '#lib/retro/ReadmeWindow.svelte';
 	import StatsWindow from '#lib/retro/StatsWindow.svelte';
+	import TipJarWindow from '#lib/retro/TipJarWindow.svelte';
 	import Win95Window from '#lib/retro/Win95Window.svelte';
 	import { load, save } from '#lib/storage.js';
 	import type { SoundCloudArtist, TrackCatalog } from '#lib/tracks.js';
@@ -21,23 +23,25 @@
 	export let darkMode = false;
 	export let onToggleTheme: () => void;
 
-	type WindowId = 'player' | 'stats' | 'readme' | 'find';
+	type WindowId = 'player' | 'stats' | 'readme' | 'find' | 'about' | 'tipjar';
 	type IconId = WindowId | 'practice';
 
 	const VOLUME_KEY = 'mp3dle:volume';
-	const widths = { player: 700, stats: 300, readme: 470, find: 480 };
+	const widths = { player: 700, stats: 300, readme: 470, find: 480, about: 440, tipjar: 420 };
 	const allWindows = Object.keys(widths) as WindowId[];
 	const LOAD_BLOCKS = 20;
 	const desktopIcons: {
 		id: IconId;
 		label: string;
-		icon: 'record' | 'folder' | 'text' | 'sheet' | 'practice';
+		icon: 'record' | 'folder' | 'text' | 'sheet' | 'practice' | 'about' | 'jar';
 	}[] = [
 		{ id: 'player', label: 'mp3dle Player', icon: 'record' },
 		{ id: 'find', label: 'Find Artist', icon: 'folder' },
 		{ id: 'readme', label: 'readme.txt', icon: 'text' },
 		{ id: 'stats', label: 'stats.xls', icon: 'sheet' },
-		{ id: 'practice', label: 'practice.exe', icon: 'practice' }
+		{ id: 'practice', label: 'practice.exe', icon: 'practice' },
+		{ id: 'about', label: 'About mp3dle', icon: 'about' },
+		{ id: 'tipjar', label: 'tipjar.exe', icon: 'jar' }
 	];
 
 	const phoneSize = window.matchMedia('(max-width: 900px)');
@@ -49,6 +53,18 @@
 		player: { open: Boolean(catalog), min: false, x: 124, y: 16 },
 		stats: { open: Boolean(catalog) && statsFits, min: false, x: 854, y: 66 },
 		readme: { open: false, min: false, x: 190, y: 90 },
+		about: {
+			open: false,
+			min: false,
+			x: Math.max(Math.round((window.innerWidth - widths.about) / 2), 124),
+			y: 70
+		},
+		tipjar: {
+			open: false,
+			min: false,
+			x: Math.max(Math.round((window.innerWidth - widths.tipjar) / 2), 124),
+			y: 90
+		},
 		find: {
 			open: !catalog,
 			min: false,
@@ -56,7 +72,7 @@
 			y: 70
 		}
 	};
-	let order: WindowId[] = ['readme', 'find', 'stats', 'player']; // last one is on top
+	let order: WindowId[] = ['about', 'tipjar', 'readme', 'find', 'stats', 'player']; // last one is on top
 	let focus: WindowId | null = catalog ? 'player' : 'find';
 	let openedFrom: Partial<Record<WindowId, Element | null>> = {};
 	let elements: Partial<Record<WindowId, HTMLElement>> = {};
@@ -97,7 +113,9 @@
 			['player', 'mp3dle Player'],
 			['find', 'Find Artist'],
 			['stats', statsTitle],
-			['readme', 'readme.txt - Notepad']
+			['readme', 'readme.txt - Notepad'],
+			['about', 'mp3dle Properties'],
+			['tipjar', 'tipjar.exe']
 		] as [WindowId, string][]
 	).filter(([id]) => windows[id].open);
 	// phones only ever show the one on top
@@ -431,6 +449,50 @@
 			</Win95Window>
 		{/if}
 
+		{#if shown.includes('about')}
+			<Win95Window
+				label="mp3dle Properties"
+				title="mp3dle Properties"
+				width={widths.about}
+				x={windows.about.x}
+				y={windows.about.y}
+				z={10 + order.indexOf('about')}
+				focused={focus === 'about'}
+				{mobile}
+				closeLabel="Close mp3dle Properties"
+				minimiseLabel="Minimise mp3dle Properties"
+				bind:element={elements.about}
+				onFocus={() => raise('about')}
+				onMove={(x, y) => moveWindow('about', x, y)}
+				onClose={() => closeWindow('about')}
+				onMinimise={() => minimiseWindow('about')}
+			>
+				<AboutWindow onClose={() => closeWindow('about')} />
+			</Win95Window>
+		{/if}
+
+		{#if shown.includes('tipjar')}
+			<Win95Window
+				label="tipjar.exe"
+				title="tipjar.exe"
+				width={widths.tipjar}
+				x={windows.tipjar.x}
+				y={windows.tipjar.y}
+				z={10 + order.indexOf('tipjar')}
+				focused={focus === 'tipjar'}
+				{mobile}
+				closeLabel="Close tipjar.exe"
+				minimiseLabel="Minimise tipjar.exe"
+				bind:element={elements.tipjar}
+				onFocus={() => raise('tipjar')}
+				onMove={(x, y) => moveWindow('tipjar', x, y)}
+				onClose={() => closeWindow('tipjar')}
+				onMinimise={() => minimiseWindow('tipjar')}
+			>
+				<TipJarWindow onClose={() => closeWindow('tipjar')} />
+			</Win95Window>
+		{/if}
+
 		{#if shown.includes('find')}
 			<Win95Window
 				label="Find Artist"
@@ -529,6 +591,13 @@
 						{/each}
 					</div>
 				{/if}
+				<div class="start-rule" aria-hidden="true"></div>
+				<button type="button" class="menu-item" on:click={() => openWindow('about')}>
+					About mp3dle...
+				</button>
+				<button type="button" class="menu-item" on:click={() => openWindow('tipjar')}>
+					Tip jar...
+				</button>
 				{#if mobile}
 					<div class="start-volume">
 						<label for="start-volume">Volume</label>
@@ -730,8 +799,10 @@
 		position: absolute;
 		left: 14px;
 		top: 14px;
+		bottom: 14px;
 		display: flex;
-		flex-direction: column;
+		flex-flow: column wrap;
+		align-content: flex-start;
 		gap: 10px;
 	}
 
