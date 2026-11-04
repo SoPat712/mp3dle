@@ -26,7 +26,9 @@ export type TrackCatalog = {
 
 // remixes, live versions and so on, we only want the originals
 const ALTERNATE_VERSION =
-	/(?:[([][^\])]*(?:acoustic|a\s*cappella|acapella|instrumental|karaoke|remix|rework|edit|version|demo|live|stripped|sped[ -]?up|slowed|nightcore|remaster(?:ed)?|edition|mix)[^\])]*[\])])|(?:\s[-–—:]\s*(?:acoustic|a\s*cappella|acapella|instrumental|karaoke|remix|rework|edit|version|demo|live|stripped|sped[ -]?up|slowed|nightcore|remaster(?:ed)?|edition|mix)\b)/i;
+	/(?:[([][^\])]*(?:acoustic|a\s*cappella|acapella|instrumental|karaoke|remix|rework|edit|version|demo|live|stripped|sped[ -]?up|slowed|nightcore|remaster(?:ed)?|edition|mix|commentary|voice memo|track by track|interview|sessions?|concert|rehearsal|short film|snippet|teaser|preview|cover|extended)[^\])]*(?:[\])]|$))|(?:\s[-–—:]\s*(?:acoustic|a\s*cappella|acapella|instrumental|karaoke|remix|rework|edit|version|demo|live|stripped|sped[ -]?up|slowed|nightcore|remaster(?:ed)?|edition|mix|commentary|voice memo|track by track|interview)\b)/i;
+
+const TAYLORS_VERSION = /(?:\(Taylor['’]s Version\)|\[Taylor['’]s Version\])/gi;
 
 export function getLocalDateKey(date = new Date()) {
 	const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -86,10 +88,17 @@ export function filterCatalogTracks<T extends Track>(catalog: T[]): T[] {
 	const byTitle = new Map<string, T>();
 
 	for (const track of catalog) {
-		if (ALTERNATE_VERSION.test(track.title)) continue;
-		const title = normalizeTrackTitle(track.title);
-		const existing = byTitle.get(title);
-		if (!existing || compareSlugs(track.slug, existing.slug) < 0) byTitle.set(title, track);
+		const title = track.title.replace(TAYLORS_VERSION, '');
+		if (ALTERNATE_VERSION.test(title)) continue;
+		// credits and re-recording labels don't make these different songs
+		const dedupeKey = normalizeTrackTitle(
+			title.replace(
+				/\((?:(?:feat\.|ft\.|with)\s+[^)]*|from the vault)\)|\[(?:(?:feat\.|ft\.|with)\s+[^\]]*|from the vault)\]/gi,
+				''
+			)
+		);
+		const existing = byTitle.get(dedupeKey);
+		if (!existing || compareSlugs(track.slug, existing.slug) < 0) byTitle.set(dedupeKey, track);
 	}
 
 	return [...byTitle.values()];
