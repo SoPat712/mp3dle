@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Desktop from '#lib/retro/Desktop.svelte';
-	import { load, moveOldKeys, save } from '#lib/storage.js';
+	import { load, moveOldKeys, remove, save } from '#lib/storage.js';
+	import { nextTheme, parseTheme, type Theme } from '#lib/theme.js';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -12,21 +13,22 @@
 	const THEME_KEY = 'mp3dle:theme';
 	const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
 
-	// picking a theme in the start menu beats whatever the system says
-	let picked = load(THEME_KEY);
-	let darkMode = picked ? picked === 'dark' : systemDark.matches;
+	// auto follows the system, light and dark override it
+	let theme: Theme = parseTheme(load(THEME_KEY));
+	let systemIsDark = systemDark.matches;
 
-	function toggleTheme() {
-		darkMode = !darkMode;
-		picked = darkMode ? 'dark' : 'light';
-		save(THEME_KEY, picked);
+	function cycleTheme() {
+		theme = nextTheme(theme);
+		if (theme === 'auto') remove(THEME_KEY);
+		else save(THEME_KEY, theme);
 	}
 
+	$: darkMode = theme === 'auto' ? systemIsDark : theme === 'dark';
 	$: document.documentElement.style.colorScheme = darkMode ? 'dark' : 'light';
 
 	onMount(() => {
 		const systemChanged = (event: MediaQueryListEvent) => {
-			if (!picked) darkMode = event.matches;
+			systemIsDark = event.matches;
 		};
 		systemDark.addEventListener('change', systemChanged);
 		return () => systemDark.removeEventListener('change', systemChanged);
@@ -42,8 +44,8 @@
 		catalog={data.catalog}
 		practiceKey={data.practiceKey}
 		pageError={data.error}
-		{darkMode}
-		onToggleTheme={toggleTheme}
+		{theme}
+		onCycleTheme={cycleTheme}
 	/>
 </div>
 

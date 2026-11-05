@@ -9,6 +9,7 @@
 		| 'jar'
 		| 'start'
 		| 'speaker'
+		| 'close'
 		| 'error'
 		| 'info'
 		| 'play'
@@ -68,6 +69,13 @@
 	<svg aria-hidden="true" width="15" height="13" viewBox="0 0 15 13">
 		<path d="M1 4h3l4-3v11L4 9H1z" fill="currentColor" />
 		<path d="M10 4c1.5 1.5 1.5 3.5 0 5" fill="none" stroke="currentColor" stroke-width="1.5" />
+	</svg>
+{:else if name === 'close'}
+	<svg aria-hidden="true" width="8" height="7" viewBox="0 0 8 7" shape-rendering="crispEdges">
+		<path
+			d="M0 0h2v1H0zM6 0h2v1H6zM1 1h2v1H1zM5 1h2v1H5zM2 2h4v1H2zM3 3h2v1H3zM2 4h4v1H2zM1 5h2v1H1zM5 5h2v1H5zM0 6h2v1H0zM6 6h2v1H6z"
+			fill="currentColor"
+		/>
 	</svg>
 {:else if name === 'error'}
 	<svg aria-hidden="true" width="34" height="34" viewBox="0 0 34 34">

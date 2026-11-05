@@ -15,13 +15,14 @@
 	import TipJarWindow from '#lib/retro/TipJarWindow.svelte';
 	import Win95Window from '#lib/retro/Win95Window.svelte';
 	import { load, save } from '#lib/storage.js';
+	import type { Theme } from '#lib/theme.js';
 	import type { SoundCloudArtist, TrackCatalog } from '#lib/tracks.js';
 
 	export let catalog: TrackCatalog | null;
 	export let practiceKey = '';
 	export let pageError = '';
-	export let darkMode = false;
-	export let onToggleTheme: () => void;
+	export let theme: Theme;
+	export let onCycleTheme: () => void;
 
 	type WindowId = 'player' | 'stats' | 'readme' | 'find' | 'about' | 'tipjar';
 	type IconId = WindowId | 'practice';
@@ -218,11 +219,6 @@
 	function toggleVolume() {
 		volumeOpen = !volumeOpen;
 		startOpen = false;
-	}
-
-	function toggleTheme() {
-		startOpen = false;
-		onToggleTheme();
 	}
 
 	function handleVolume(event: Event) {
@@ -594,11 +590,11 @@
 								</button>
 								<button
 									type="button"
-									class="menu-item start-fav-remove"
+									class="start-fav-remove"
 									aria-label={`Remove ${item.username} from favorites`}
 									on:click={() => removeFavorite(item.permalink)}
 								>
-									x
+									<span class="start-fav-x"><Icon name="close" /></span>
 								</button>
 							</div>
 						{/each}
@@ -626,8 +622,8 @@
 					</div>
 				{/if}
 				<div class="start-rule" aria-hidden="true"></div>
-				<button type="button" class="menu-item" on:click={toggleTheme}>
-					Display: {darkMode ? 'Dark' : 'Light'}
+				<button type="button" class="menu-item" on:click={onCycleTheme}>
+					Display: {theme === 'auto' ? 'Auto' : theme === 'light' ? 'Light' : 'Dark'}
 				</button>
 				{#if catalog}
 					<a
@@ -635,6 +631,7 @@
 						href={catalog.artist.profileUrl}
 						target="_blank"
 						rel="external noopener noreferrer"
+						on:click={() => (startOpen = false)}
 					>
 						Open SoundCloud profile
 					</a>
@@ -893,6 +890,16 @@
 		display: flex;
 	}
 
+	.start-fav:hover,
+	.start-fav:has(.menu-item:focus-visible) {
+		background: var(--select);
+	}
+
+	.start-fav:hover .menu-item,
+	.start-fav .menu-item:focus-visible {
+		color: #fff;
+	}
+
 	.start-fav-name {
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -903,12 +910,46 @@
 		min-width: 0;
 		flex: 1;
 		padding-right: 4px;
+		background: none;
 	}
 
 	.start-fav .start-fav-remove {
 		flex: 0 0 30px;
+		display: flex;
+		align-items: center;
 		justify-content: center;
 		padding: 0;
+		border: 0;
+		background: none;
+	}
+
+	.start-fav-x {
+		width: 18px;
+		height: 16px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 2px solid;
+		border-color: var(--hi) var(--dark) var(--dark) var(--hi);
+		background: var(--face);
+		color: var(--w-text);
+	}
+
+	.start-fav-remove:active .start-fav-x {
+		border-color: var(--dark) var(--hi) var(--hi) var(--dark);
+	}
+
+	.start-fav-remove:active .start-fav-x :global(svg) {
+		transform: translate(1px, 1px);
+	}
+
+	.start-fav .start-fav-remove:focus-visible {
+		outline: none;
+	}
+
+	.start-fav-remove:focus-visible .start-fav-x {
+		outline: 1px dotted var(--w-text);
+		outline-offset: -4px;
 	}
 
 	.start-menu {
@@ -1148,6 +1189,16 @@
 
 		.start-fav .start-fav-remove {
 			flex-basis: 46px;
+		}
+
+		.start-fav-x {
+			width: 30px;
+			height: 26px;
+		}
+
+		.start-fav-x :global(svg) {
+			width: 16px;
+			height: 14px;
 		}
 
 		.desk {
