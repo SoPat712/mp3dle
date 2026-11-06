@@ -3,9 +3,36 @@
 	import Desktop from '#lib/retro/Desktop.svelte';
 	import { load, moveOldKeys, remove, save } from '#lib/storage.js';
 	import { nextTheme, parseTheme, type Theme } from '#lib/theme.js';
+	import type { TrackCatalog } from '#lib/tracks.js';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
+
+	let catalog: TrackCatalog | null = null;
+	let practiceKey = '';
+	let pageError = '';
+	let pendingArtist = '';
+	let catalogPending = true;
+
+	function resolveCatalog(request: PageData) {
+		catalogPending = true;
+		pendingArtist =
+			request.artist.toLowerCase() === catalog?.artist.permalink.toLowerCase()
+				? ''
+				: request.artist;
+		pageError = '';
+		request.catalog.then((result) => {
+			// a newer navigation owns the page now
+			if (data !== request) return;
+			catalog = result.catalog;
+			practiceKey = result.catalog ? request.practiceKey : '';
+			pageError = result.error;
+			pendingArtist = '';
+			catalogPending = false;
+		});
+	}
+
+	$: resolveCatalog(data);
 
 	// before anything reads storage
 	moveOldKeys();
@@ -42,14 +69,16 @@
 </script>
 
 <svelte:head>
-	<title>{data.catalog ? `${data.catalog.artist.username} mp3dle` : 'mp3dle'}</title>
+	<title>{catalog ? `${catalog.artist.username} mp3dle` : 'mp3dle'}</title>
 </svelte:head>
 
 <div class:dark-mode={darkMode} class="app-shell">
 	<Desktop
-		catalog={data.catalog}
-		practiceKey={data.practiceKey}
-		pageError={data.error}
+		{catalog}
+		{practiceKey}
+		{pageError}
+		{pendingArtist}
+		{catalogPending}
 		{theme}
 		onCycleTheme={cycleTheme}
 	/>
