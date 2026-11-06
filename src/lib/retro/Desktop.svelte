@@ -16,7 +16,12 @@
 	import Win95Window from '#lib/retro/Win95Window.svelte';
 	import { load, save } from '#lib/storage.js';
 	import type { Theme } from '#lib/theme.js';
-	import type { SoundCloudArtist, TrackCatalog } from '#lib/tracks.js';
+	import {
+		filterCatalogTracks,
+		getLocalDateKey,
+		type SoundCloudArtist,
+		type TrackCatalog
+	} from '#lib/tracks.js';
 
 	export let catalog: TrackCatalog | null;
 	export let practiceKey = '';
@@ -107,7 +112,7 @@
 			? 'Practice: stats not counted'
 			: `Next song in ${timeLeft}`;
 	$: catalogLine = catalog
-		? `Catalog: ${catalog.tracks.length.toLocaleString()} cleaned tracks · refreshed ${new Date(catalog.updatedAt).toLocaleDateString()}`
+		? `Catalog: ${filterCatalogTracks(catalog.tracks, getLocalDateKey()).length.toLocaleString()} cleaned tracks · refreshed ${new Date(catalog.updatedAt).toLocaleDateString()}`
 		: '';
 	$: statsTitle = catalog ? `stats.xls - ${catalog.artist.username}` : 'stats.xls';
 	$: tasks = (
@@ -682,19 +687,30 @@
 			<Icon name="start" />Start
 		</button>
 		{#if mobile}
-			<button
-				type="button"
-				class="b95 mobile-tab"
-				class:on={focus === 'player'}
-				disabled={!catalog}
-				on:click={() => openWindow('player')}
-			>
-				Player
-			</button>
+			{#if catalog}
+				<button
+					type="button"
+					class="b95 mobile-tab"
+					class:on={focus === 'player'}
+					on:click={() => openWindow('player')}
+				>
+					Player
+				</button>
+			{:else}
+				<button
+					type="button"
+					class="b95 mobile-tab"
+					class:on={focus === 'find'}
+					on:click={() => openWindow('find')}
+				>
+					Find
+				</button>
+			{/if}
 			<button
 				type="button"
 				class="b95 mobile-tab"
 				class:on={focus === 'stats'}
+				disabled={!catalog}
 				on:click={() => openWindow('stats')}
 			>
 				Stats

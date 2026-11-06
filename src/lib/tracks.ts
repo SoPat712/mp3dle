@@ -29,6 +29,15 @@ const ALTERNATE_VERSION =
 	/(?:[([][^\])]*(?:acoustic|a\s*cappella|acapella|instrumental|karaoke|remix|rework|edit|version|demo|live|stripped|sped[ -]?up|slowed|nightcore|remaster(?:ed)?|edition|mix|commentary|voice memo|track by track|interview|sessions?|concert|rehearsal|short film|snippet|teaser|preview|cover|extended)[^\])]*(?:[\])]|$))|(?:\s[-–—:]\s*(?:acoustic|a\s*cappella|acapella|instrumental|karaoke|remix|rework|edit|version|demo|live|stripped|sped[ -]?up|slowed|nightcore|remaster(?:ed)?|edition|mix|commentary|voice memo|track by track|interview)\b)/i;
 
 const TAYLORS_VERSION = /(?:\(Taylor['’]s Version\)|\[Taylor['’]s Version\])/gi;
+const TITLE_CREDITS =
+	/\((?:(?:feat\.|ft\.|with)\s+[^)]*|from the vault)\)|\[(?:(?:feat\.|ft\.|with)\s+[^\]]*|from the vault)\]/gi;
+const TITLE_QUALIFIER = /(?:\(([^()]*)\)|\[([^\]]*)\]|(?:\s[-–—]\s|:)\s*(.+))\s*$/;
+const PART_NUMBER = /^(?:part|pt)\s+(?:\d+|[ivxlcdm]+)\b/i;
+const LIVE_SESSION = /\b(?:colou?rs\s+show|tiny\s+desk)\b/i;
+
+// earlier days keep the old rules so nobody's song changes mid-day.
+// the server has no player date, so it only applies the original rules.
+const NEWER_RULES_FROM = '2026-11-06';
 
 export function getLocalDateKey(date = new Date()) {
 	const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -52,7 +61,7 @@ function dailySeedName(dateKey: string) {
 
 export function getDailyTrack(dateKey: string, catalog: Track[], artistKey: string) {
 	if (!isValidDateKey(dateKey)) throw new Error(`Invalid date key: ${dateKey}`);
-	const tracks = filterCatalogTracks(catalog);
+	const tracks = filterCatalogTracks(catalog, dateKey);
 	if (!tracks.length) throw new Error('This artist has no playable original tracks.');
 
 	// every track rolls a number for the day and the highest one wins
@@ -68,35 +77,53 @@ export function getDailyTrack(dateKey: string, catalog: Track[], artistKey: stri
 	return winner;
 }
 
-export function getGuessTracks(catalog: Track[]) {
-	return filterCatalogTracks(catalog).sort((a, b) => a.title.localeCompare(b.title));
+export function getGuessTracks(catalog: Track[], dateKey?: string) {
+	return filterCatalogTracks(catalog, dateKey).sort((a, b) => a.title.localeCompare(b.title));
 }
 
 export function getPracticeTrack<T extends Track>(
 	catalog: T[],
 	artistKey: string,
-	practiceKey: string
+	practiceKey: string,
+	dateKey?: string
 ): T {
-	const tracks = filterCatalogTracks(catalog).sort((a, b) => a.slug.localeCompare(b.slug));
+	const tracks = filterCatalogTracks(catalog, dateKey).sort((a, b) => a.slug.localeCompare(b.slug));
 	if (!tracks.length) throw new Error('This artist has no playable original tracks.');
 	const roll = seedrandom(`mp3dle:${artistKey}:practice:${practiceKey}`)();
 	return tracks[Math.floor(roll * tracks.length)];
 }
 
 // drops alternate versions and keeps one track per title
-export function filterCatalogTracks<T extends Track>(catalog: T[]): T[] {
+export function filterCatalogTracks<T extends Track>(catalog: T[], dateKey?: string): T[] {
+	const newerRules = Boolean(dateKey && dateKey >= NEWER_RULES_FROM);
+	const plainTitles = new Set<string>();
+	if (newerRules) {
+		for (const track of catalog) {
+			const title = track.title.replace(TAYLORS_VERSION, '');
+			if (ALTERNATE_VERSION.test(title) || LIVE_SESSION.test(title)) continue;
+			const base = title.replace(TITLE_CREDITS, '').trim();
+			if (!TITLE_QUALIFIER.test(base)) plainTitles.add(normalizeTrackTitle(base));
+		}
+	}
 	const byTitle = new Map<string, T>();
 
 	for (const track of catalog) {
 		const title = track.title.replace(TAYLORS_VERSION, '');
 		if (ALTERNATE_VERSION.test(title)) continue;
 		// credits and re-recording labels don't make these different songs
-		const dedupeKey = normalizeTrackTitle(
-			title.replace(
-				/\((?:(?:feat\.|ft\.|with)\s+[^)]*|from the vault)\)|\[(?:(?:feat\.|ft\.|with)\s+[^\]]*|from the vault)\]/gi,
-				''
-			)
-		);
+		const base = title.replace(TITLE_CREDITS, '').trim();
+		if (newerRules) {
+			if (LIVE_SESSION.test(title)) continue;
+			const qualifier = TITLE_QUALIFIER.exec(base);
+			if (
+				qualifier &&
+				!PART_NUMBER.test(normalizeTrackTitle(qualifier[1] ?? qualifier[2] ?? qualifier[3])) &&
+				plainTitles.has(normalizeTrackTitle(base.slice(0, qualifier.index)))
+			) {
+				continue;
+			}
+		}
+		const dedupeKey = normalizeTrackTitle(base);
 		const existing = byTitle.get(dedupeKey);
 		if (!existing || compareSlugs(track.slug, existing.slug) < 0) byTitle.set(dedupeKey, track);
 	}
