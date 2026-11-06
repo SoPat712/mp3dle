@@ -5,6 +5,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 		<title>mp3dle</title>
 		<meta name="theme-color" content="#1f3561" />
+		<link rel="preconnect" href="https://w.soundcloud.com" />
+		<link rel="preconnect" href="https://widget.sndcdn.com" />
+		<link rel="preconnect" href="https://api-widget.soundcloud.com" />
+		<link rel="preconnect" href="https://i1.sndcdn.com" />
 		<script>
 			// apply the theme before the app paints
 			try {
@@ -23,6 +27,25 @@
 				document
 					.querySelector('meta[name="theme-color"]')
 					.setAttribute('content', dark ? '#10192e' : '#1f3561');
+			} catch {}
+		</script>
+		<script>
+			// start the catalog and player script downloads while the app loads. the url must match src/routes/+page.ts
+			try {
+				const artist = new URLSearchParams(location.search).get('artist')?.trim() ?? '';
+				if (/^[a-z0-9_-]+$/i.test(artist)) {
+					const catalog = document.createElement('link');
+					catalog.rel = 'preload';
+					catalog.as = 'fetch';
+					catalog.crossOrigin = 'anonymous';
+					catalog.href = `/api/soundcloud/catalog?artist=${encodeURIComponent(artist)}&schema=3`;
+					document.head.appendChild(catalog);
+					const widget = document.createElement('link');
+					widget.rel = 'preload';
+					widget.as = 'script';
+					widget.href = 'https://w.soundcloud.com/player/api.js';
+					document.head.appendChild(widget);
+				}
 			} catch {}
 		</script>
 		<meta property="og:type" content="website" />

@@ -9,7 +9,13 @@ export async function GET({ url }) {
 	try {
 		return Response.json(
 			{ artists: await searchArtists(query) },
-			{ headers: { 'cache-control': 'public, max-age=60, s-maxage=300' } }
+			{
+				headers: {
+					'cache-control': 'public, max-age=60, s-maxage=300',
+					'netlify-cdn-cache-control':
+						'public, durable, s-maxage=3600, stale-while-revalidate=86400'
+				}
+			}
 		);
 	} catch (error) {
 		console.error(error);
