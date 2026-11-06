@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { dragHandle } from '#lib/retro/drag.js';
+	import Icon from '#lib/retro/icons/Icon.svelte';
 
 	export let label: string;
 	export let title: string;
@@ -38,11 +39,13 @@
 		<span class="title-bar-text">{title}</span>
 		{#if minimiseLabel && !mobile}
 			<button type="button" class="title-btn" aria-label={minimiseLabel} on:click={onMinimise}>
-				_
+				<Icon name="minimise" />
 			</button>
 		{/if}
 		{#if closeLabel}
-			<button type="button" class="title-btn" aria-label={closeLabel} on:click={onClose}>x</button>
+			<button type="button" class="title-btn" aria-label={closeLabel} on:click={onClose}>
+				<Icon name="close" />
+			</button>
 		{/if}
 	</div>
 	<slot />
