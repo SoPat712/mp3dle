@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy, onMount, tick } from 'svelte';
 	import { dragHandle } from '#lib/retro/drag.js';
 	import GuessBox from '#lib/retro/GuessBox.svelte';
 	import GuessTable from '#lib/retro/GuessTable.svelte';
@@ -77,6 +77,7 @@
 	let saveReady = false;
 
 	let iframe: HTMLIFrameElement;
+	let widgetKey = 0;
 	let widget: SoundCloudWidget | undefined;
 	let loading = true;
 	let error = '';
@@ -84,6 +85,7 @@
 	let playing = false;
 	let buffering = false;
 	let pressedPlay = false;
+	let wantPlay = false;
 	let heardPlay = false;
 	let blockedOnce = false;
 	let seeking = false;
@@ -180,46 +182,83 @@
 	}
 
 	async function startWidget() {
+		const key = widgetKey;
 		loadTimer = setTimeout(() => {
 			loading = false;
-			error = 'SoundCloud took too long to load. Please reload and try again.';
+			wantPlay = false;
+			error = 'SoundCloud took too long to load. Try again?';
 		}, 15_000);
 
 		try {
 			await loadWidgetScript();
+			if (key !== widgetKey) return;
 			widget = window.SC!.Widget(iframe);
 			listenToWidget(widget, window.SC!.Widget.Events);
 		} catch (cause) {
+			if (key !== widgetKey) return;
 			clearTimeout(loadTimer);
 			loading = false;
+			wantPlay = false;
 			error = (cause as Error).message;
 		}
 	}
 
+	async function retry() {
+		clearTimeout(loadTimer);
+		clearTimeout(stallTimer);
+		error = '';
+		errorHidden = false;
+		playing = false;
+		buffering = false;
+		wantPlay = false;
+		pressedPlay = false;
+		heardPlay = false;
+		blockedOnce = false;
+		seeking = false;
+		position = 0;
+		startedFrom = 0;
+		songLength = 0;
+		note = '';
+		loading = true;
+		widget = undefined;
+		widgetKey += 1;
+		await tick();
+		startWidget();
+	}
+
 	function listenToWidget(widget: SoundCloudWidget, events: Record<string, string>) {
+		const key = widgetKey;
 		widget.bind(events.READY, () => {
+			if (key !== widgetKey) return;
 			clearTimeout(loadTimer);
 			widget.setVolume(volume);
 			// safari refuses the first play if the song isn't loaded yet, even on a real click.
 			// seeking loads it without making any sound
 			widget.seekTo(0);
 			widget.getDuration((length) => {
+				if (key !== widgetKey) return;
 				songLength = length;
 				loading = false;
-				if (!(length > 0)) error = 'SoundCloud did not return a playable song duration.';
+				if (!(length > 0)) {
+					wantPlay = false;
+					error = 'SoundCloud did not return a playable song duration.';
+				}
 			});
 			widget.getCurrentSound((sound) => {
+				if (key !== widgetKey) return;
 				if (sound?.artwork_url) artwork = sound.artwork_url;
 			});
 		});
 
 		// that seek fires a play event too, so wait until someone has actually pressed play
 		widget.bind(events.PLAY, () => {
+			if (key !== widgetKey) return;
 			heardPlay = true;
-			if (pressedPlay) playing = true;
+			if (pressedPlay && wantPlay) playing = true;
 		});
 
 		widget.bind(events.PAUSE, () => {
+			if (key !== widgetKey) return;
 			playing = false;
 			// we didn't pause it and it never got going, so the browser blocked it.
 			// pressing again works. if it happens twice, let the 15 seconds run out.
@@ -232,27 +271,35 @@
 		});
 
 		widget.bind(events.FINISH, () => {
+			if (key !== widgetKey) return;
+			wantPlay = false;
 			playing = false;
 			position = gameOver ? songLength : clipSeconds * 1000;
 		});
 
 		widget.bind(events.PLAY_PROGRESS, (event) => {
-			if (!event || !playing || seeking) return;
+			if (key !== widgetKey || !event || seeking) return;
 			// only once the position really moves do we know the audio works
-			if (event.currentPosition > startedFrom + 100) stopWaiting();
+			if (wantPlay && !playing && event.currentPosition > startedFrom + 100) playing = true;
 
 			const limit = gameOver ? songLength : clipSeconds * 1000;
-			position = Math.min(event.currentPosition, limit);
-			if (event.currentPosition >= limit) {
+			if (playing) {
+				if (event.currentPosition > startedFrom + 100) stopWaiting();
+				position = Math.min(event.currentPosition, limit);
+			}
+			if (event.currentPosition >= limit && (!gameOver || playing)) {
+				const wanted = wantPlay;
 				pause();
-				if (!gameOver) note = 'Clip finished. Guess or skip.';
+				if (!gameOver && wanted) note = 'Clip finished. Guess or skip.';
 			}
 		});
 
 		widget.bind(events.ERROR, () => {
+			if (key !== widgetKey) return;
 			clearTimeout(loadTimer);
 			stopWaiting();
 			playing = false;
+			wantPlay = false;
 			loading = false;
 			error = CANT_PLAY;
 		});
@@ -268,6 +315,7 @@
 		statusMessage = '';
 		startedFrom = position;
 		pressedPlay = true;
+		wantPlay = true;
 		heardPlay = false;
 		buffering = true;
 
@@ -276,6 +324,7 @@
 		stallTimer = setTimeout(() => {
 			stopWaiting();
 			playing = false;
+			wantPlay = false;
 			error = CANT_PLAY;
 			errorHidden = false;
 		}, 15_000);
@@ -291,6 +340,7 @@
 	export function pause() {
 		stopWaiting();
 		playing = false;
+		wantPlay = false;
 		widget?.pause();
 	}
 
@@ -495,19 +545,21 @@
 </script>
 
 <!-- lives outside the window so minimising or closing it can't kill the audio -->
-<iframe
-	bind:this={iframe}
-	src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(song.url)}&show_artwork=false&visual=false`}
-	class="soundcloud-player"
-	allow="autoplay; encrypted-media"
-	title="SoundCloud preview player"
-></iframe>
+{#key widgetKey}
+	<iframe
+		bind:this={iframe}
+		src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(song.url)}&show_artwork=false&visual=false`}
+		class="soundcloud-player"
+		allow="autoplay; encrypted-media"
+		title="SoundCloud preview player"
+	></iframe>
+{/key}
 
 {#if error && !errorHidden && visible}
 	<MessageBox title="mp3dle Player" icon="error" onDismiss={() => (errorHidden = true)}>
 		{error}
 		<svelte:fragment slot="buttons">
-			<button type="button" class="b95" on:click={() => window.location.reload()}>Retry</button>
+			<button type="button" class="b95" on:click={retry}>Retry</button>
 			<button type="button" class="b95" on:click={playAnother}>Play a practice song</button>
 			<a class="b95 button-link" href={song.url} target="_blank" rel="external noopener noreferrer">
 				Open on SoundCloud
