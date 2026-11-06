@@ -148,16 +148,24 @@
 
 .title-btn {
 	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	width: 18px;
 	height: 16px;
 	padding: 0;
 	border: 2px solid;
 	border-color: var(--hi) var(--dark) var(--dark) var(--hi);
 	background: var(--face);
-	font:
-		bold 10px/1 Tahoma,
-		sans-serif;
 	color: var(--w-text);
+}
+
+.title-btn:active {
+	border-color: var(--dark) var(--hi) var(--hi) var(--dark);
+}
+
+.title-btn:active svg {
+	transform: translate(1px, 1px);
 }
 
 .menu-item {
@@ -245,7 +253,11 @@
 	.title-btn {
 		width: 44px;
 		height: 30px;
-		font-size: 12px;
+	}
+
+	.title-btn svg {
+		width: 16px;
+		height: 14px;
 	}
 
 	.b95 {

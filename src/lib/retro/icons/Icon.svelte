@@ -9,6 +9,7 @@
 		| 'jar'
 		| 'start'
 		| 'speaker'
+		| 'minimise'
 		| 'close'
 		| 'error'
 		| 'info'
@@ -69,6 +70,10 @@
 	<svg aria-hidden="true" width="15" height="13" viewBox="0 0 15 13">
 		<path d="M1 4h3l4-3v11L4 9H1z" fill="currentColor" />
 		<path d="M10 4c1.5 1.5 1.5 3.5 0 5" fill="none" stroke="currentColor" stroke-width="1.5" />
+	</svg>
+{:else if name === 'minimise'}
+	<svg aria-hidden="true" width="8" height="7" viewBox="0 0 8 7" shape-rendering="crispEdges">
+		<rect x="1" y="5" width="6" height="2" fill="currentColor" />
 	</svg>
 {:else if name === 'close'}
 	<svg aria-hidden="true" width="8" height="7" viewBox="0 0 8 7" shape-rendering="crispEdges">
