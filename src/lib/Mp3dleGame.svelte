@@ -626,10 +626,18 @@
 			</button>
 		{:else}
 			<button type="button" class="round-hit" aria-label="Minimise player" on:click={onMinimise}>
-				<span class="round">_</span>
+				<span class="round">
+					<svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12">
+						<path d="M2 9h8" stroke="#fff" stroke-width="2" />
+					</svg>
+				</span>
 			</button>
 			<button type="button" class="round-hit" aria-label="Close player" on:click={onClose}>
-				<span class="round">x</span>
+				<span class="round">
+					<svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12">
+						<path d="m2.5 2.5 7 7m0-7-7 7" stroke="#fff" stroke-width="1.6" />
+					</svg>
+				</span>
 			</button>
 		{/if}
 	</div>
