@@ -20,6 +20,7 @@
 	} from '#lib/tracks.js';
 	import {
 		calculateNextStats,
+		CLIP_LENGTHS,
 		createEmptyStats,
 		parseSavedGame,
 		sanitizeStats,
@@ -30,7 +31,7 @@
 	export let catalog: TrackCatalog;
 	export let practiceKey = '';
 	export let volume = 80;
-	export let stats: Stats = createEmptyStats(6);
+	export let stats: Stats = createEmptyStats(CLIP_LENGTHS.length);
 	export let timeLeft = '';
 
 	// the desktop owns where the window is and what's open
@@ -51,9 +52,7 @@
 	export let favorite = false;
 	export let onToggleFavorite: () => void = () => {};
 
-	// seconds of song you get on each try
-	const clipLengths = [1, 2, 4, 7, 11, 16];
-	const maxTries = clipLengths.length;
+	const maxTries = CLIP_LENGTHS.length;
 	const CANT_PLAY = "This song can't play in this browser.";
 
 	const today = getLocalDateKey();
@@ -105,13 +104,13 @@
 	let clock: ReturnType<typeof setInterval>;
 
 	$: tries = attemptInfos.length;
-	$: clipSeconds = clipLengths[tries] ?? 16;
-	$: nextExtra = tries < maxTries - 1 ? clipLengths[tries + 1] - clipSeconds : 0;
+	$: clipSeconds = CLIP_LENGTHS[tries] ?? CLIP_LENGTHS[maxTries - 1];
+	$: nextExtra = tries < maxTries - 1 ? CLIP_LENGTHS[tries + 1] - clipSeconds : 0;
 	$: resultLabel = won ? `${tries}/${maxTries}` : `X/${maxTries}`;
 
 	// each chunk of the clip bar fills up green as the song gets to it
-	$: segments = clipLengths.map((end, i) => {
-		const start = clipLengths[i - 1] ?? 0;
+	$: segments = CLIP_LENGTHS.map((end, i) => {
+		const start = CLIP_LENGTHS[i - 1] ?? 0;
 		const filled = Math.max(0, Math.min(1, (position / 1000 - start) / (end - start))) * 100;
 		const color = i <= tries ? 'var(--unlock)' : 'var(--deck-edge)';
 		return {
@@ -681,7 +680,7 @@
 					<div
 						class="clip-bar"
 						role="img"
-						aria-label="Clip length: {clipSeconds} of 16 seconds unlocked"
+						aria-label="Clip length: {clipSeconds} of {CLIP_LENGTHS[maxTries - 1]} seconds unlocked"
 					>
 						{#each segments as segment (segment.end)}
 							<span style:flex={segment.size} style:background={segment.background}></span>
@@ -747,9 +746,9 @@
 				<div
 					class="chips"
 					role="img"
-					aria-label="Clip length: {clipSeconds} of 16 seconds unlocked"
+					aria-label="Clip length: {clipSeconds} of {CLIP_LENGTHS[maxTries - 1]} seconds unlocked"
 				>
-					{#each clipLengths as seconds, i (seconds)}
+					{#each CLIP_LENGTHS as seconds, i (seconds)}
 						<span
 							class="chip"
 							class:now={i === tries}
@@ -799,7 +798,7 @@
 	{/if}
 
 	<div class="log">
-		<GuessTable attempts={attemptInfos} {clipLengths} {gameOver} {playing} />
+		<GuessTable attempts={attemptInfos} clipLengths={CLIP_LENGTHS} {gameOver} {playing} />
 		<div class="side-buttons">
 			<button type="button" class="gloss-grey" aria-label="Open stats" on:click={onOpenStats}>
 				<Icon name="bars" />

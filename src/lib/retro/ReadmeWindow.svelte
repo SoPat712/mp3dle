@@ -1,5 +1,9 @@
 <script lang="ts">
+	import { CLIP_LENGTHS } from '#lib/game-state.js';
+
 	export let catalogLine = '';
+
+	const clipList = `${CLIP_LENGTHS.slice(0, -1).join(', ')}, then ${CLIP_LENGTHS.at(-1)}`;
 </script>
 
 <div class="menu-bar" aria-hidden="true">
@@ -8,7 +12,9 @@
 <div class="sunk notepad">
 	<p>HOW TO PLAY</p>
 	<p class="gap">1. Press play and identify the song from the unlocked snippet.</p>
-	<p>2. A skip or wrong guess unlocks a longer clip from the start.</p>
+	<p>
+		2. A skip or wrong guess unlocks a longer clip from the start: {clipList} seconds.
+	</p>
 	<p>3. Finish in as few attempts as possible and share your result.</p>
 	<p class="gap">
 		Press the star on the player to keep an artist on your desktop, or in the Start menu on a phone.

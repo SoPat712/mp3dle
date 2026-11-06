@@ -1,5 +1,8 @@
 import { getLocalDateKey, isValidDateKey } from '#lib/tracks.js';
 
+// seconds of song you get on each try
+export const CLIP_LENGTHS = [1, 2, 4, 7, 11, 16];
+
 export type Stats = {
 	played: number;
 	wins: number;
@@ -7,6 +10,7 @@ export type Stats = {
 	maxStreak: number;
 	distribution: number[];
 	lastPlayedDate?: string;
+	lastResult?: number;
 };
 
 export type AttemptInfo = { status: 'skip' | 'wrong' | 'correct'; title?: string };
@@ -45,6 +49,9 @@ export function sanitizeStats(value: unknown, maxAttempts: number): Stats {
 	const streak = Math.min(toCount(saved.streak), wins);
 	const distribution = Array.isArray(saved.distribution) ? saved.distribution : [];
 	const lastPlayed = saved.lastPlayedDate;
+	const lastPlayedDate =
+		typeof lastPlayed === 'string' && isValidDateKey(lastPlayed) ? lastPlayed : undefined;
+	const lastResult = saved.lastResult;
 
 	return {
 		played,
@@ -52,8 +59,14 @@ export function sanitizeStats(value: unknown, maxAttempts: number): Stats {
 		streak,
 		maxStreak: Math.max(streak, Math.min(toCount(saved.maxStreak), wins)),
 		distribution: Array.from({ length: maxAttempts }, (_, i) => toCount(distribution[i])),
-		lastPlayedDate:
-			typeof lastPlayed === 'string' && isValidDateKey(lastPlayed) ? lastPlayed : undefined
+		lastPlayedDate,
+		...(lastPlayedDate &&
+		typeof lastResult === 'number' &&
+		Number.isInteger(lastResult) &&
+		lastResult >= 0 &&
+		lastResult <= maxAttempts
+			? { lastResult }
+			: {})
 	};
 }
 
@@ -124,6 +137,7 @@ export function calculateNextStats(
 		streak,
 		maxStreak: Math.max(stats.maxStreak, streak),
 		distribution,
-		lastPlayedDate: todayKey
+		lastPlayedDate: todayKey,
+		lastResult: didWin ? attempts : 0
 	};
 }
