@@ -21,6 +21,8 @@
 	export let catalog: TrackCatalog | null;
 	export let practiceKey = '';
 	export let pageError = '';
+	export let pendingArtist = '';
+	export let catalogPending = false;
 	export let theme: Theme;
 	export let onCycleTheme: () => void;
 
@@ -68,14 +70,14 @@
 			y: 90
 		},
 		find: {
-			open: !catalog,
+			open: !catalog && !pendingArtist,
 			min: false,
 			x: Math.max(Math.round((window.innerWidth - widths.find) / 2), 124),
 			y: 70
 		}
 	};
 	let order: WindowId[] = ['about', 'tipjar', 'readme', 'find', 'stats', 'player']; // last one is on top
-	let focus: WindowId | null = catalog ? 'player' : 'find';
+	let focus: WindowId | null = catalog ? 'player' : pendingArtist ? null : 'find';
 	let openedFrom: Partial<Record<WindowId, Element | null>> = {};
 	let elements: Partial<Record<WindowId, HTMLElement>> = {};
 
@@ -87,7 +89,10 @@
 	let startOpen = false;
 	let volumeOpen = false;
 	let notice: { title: string; text: string } | null = null;
-	let loadingArtist = '';
+	let chosenArtist: Favorite | null = null;
+	let choiceReady = false;
+	let previousPending = '';
+	let initialLoad = Boolean(pendingArtist);
 	let loadedBlocks = 0;
 	let loadTimer: ReturnType<typeof setInterval>;
 	let startButton: HTMLButtonElement;
@@ -99,6 +104,16 @@
 	let game: Mp3dleGame | undefined;
 	let stats: Stats = createEmptyStats(CLIP_LENGTHS.length);
 	let timeLeft = '';
+
+	$: loadingPermalink = pendingArtist || chosenArtist?.permalink || '';
+	$: loadingArtist =
+		favorites.find((item) => item.permalink === loadingPermalink)?.username ||
+		(chosenArtist?.permalink === loadingPermalink
+			? chosenArtist.username
+			: loadingPermalink && `@${loadingPermalink}`);
+	$: if (!chosenArtist) syncPending(pendingArtist);
+	$: choiceDone = chosenArtist && choiceReady && !catalogPending;
+	$: if (choiceDone) finishChoice();
 
 	$: if (!catalog) stats = createEmptyStats(CLIP_LENGTHS.length);
 	$: nextLine = !catalog
@@ -283,33 +298,63 @@
 		iconMenu = null;
 	}
 
-	async function chooseArtist(artist: Favorite) {
-		if (loadingArtist) return;
-		loadingArtist = artist.username;
-
+	function startLoading() {
+		clearInterval(loadTimer);
 		// we don't know how long this takes, so the bar just creeps up like the real thing did
 		loadedBlocks = 1;
 		loadTimer = setInterval(() => {
 			loadedBlocks = Math.min(loadedBlocks + 1, LOAD_BLOCKS - 1);
 		}, 350);
+	}
+
+	function showArtist(openStats = false) {
+		// no catalog means it failed, find artist is where the error shows
+		if (catalog) {
+			setWindow('find', { open: false });
+			if (openStats && statsFits) setWindow('stats', { open: true, min: false });
+			openWindow('player');
+		} else {
+			openWindow('find');
+		}
+	}
+
+	function syncPending(artist: string) {
+		if (artist === previousPending) return;
+		previousPending = artist;
+		if (artist) startLoading();
+		else {
+			clearInterval(loadTimer);
+			loadedBlocks = LOAD_BLOCKS;
+			showArtist(initialLoad);
+			initialLoad = false;
+		}
+	}
+
+	async function chooseArtist(artist: Favorite) {
+		if (chosenArtist || pendingArtist) return;
+		chosenArtist = artist;
+		startLoading();
 
 		// cached artists load instantly, so let the bar get going before it closes
 		await Promise.all([
 			goto(resolve(`/?artist=${encodeURIComponent(artist.permalink)}`)),
 			wait(750)
 		]);
+		choiceReady = true;
+	}
+
+	async function finishChoice() {
+		choiceReady = false;
 		clearInterval(loadTimer);
 		loadedBlocks = LOAD_BLOCKS;
 		await wait(250);
-		loadingArtist = '';
-
-		// no catalog means it failed, find artist is where the error shows
-		if (catalog) {
-			setWindow('find', { open: false });
-			openWindow('player');
-		} else {
-			openWindow('find');
+		if (catalogPending) {
+			startLoading();
+			choiceReady = true;
+			return;
 		}
+		chosenArtist = null;
+		showArtist();
 	}
 
 	function handlePointerDown(event: PointerEvent) {
