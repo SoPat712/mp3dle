@@ -5,6 +5,26 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 		<title>mp3dle</title>
 		<meta name="theme-color" content="#1f3561" />
+		<script>
+			// apply the theme before the app paints
+			try {
+				let saved;
+				try {
+					saved =
+						localStorage.getItem('mp3dle:theme') ??
+						localStorage.getItem('soundcloud-heardle:theme');
+				} catch {}
+				const dark =
+					saved === 'dark' ||
+					(saved !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+				const theme = dark ? 'dark' : 'light';
+				document.documentElement.dataset.theme = theme;
+				document.documentElement.style.colorScheme = theme;
+				document
+					.querySelector('meta[name="theme-color"]')
+					.setAttribute('content', dark ? '#10192e' : '#1f3561');
+			} catch {}
+		</script>
 		<meta property="og:type" content="website" />
 		<meta property="og:site_name" content="mp3dle" />
 		<meta property="og:title" content="mp3dle" />

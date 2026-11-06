@@ -24,7 +24,13 @@
 	}
 
 	$: darkMode = theme === 'auto' ? systemIsDark : theme === 'dark';
-	$: document.documentElement.style.colorScheme = darkMode ? 'dark' : 'light';
+	$: {
+		document.documentElement.dataset.theme = darkMode ? 'dark' : 'light';
+		document.documentElement.style.colorScheme = darkMode ? 'dark' : 'light';
+		document
+			.querySelector('meta[name="theme-color"]')
+			?.setAttribute('content', darkMode ? '#10192e' : '#1f3561');
+	}
 
 	onMount(() => {
 		const systemChanged = (event: MediaQueryListEvent) => {
