@@ -14,6 +14,7 @@
 		getGuessTracks,
 		getLocalDateKey,
 		getPracticeTrack,
+		getWidgetSrc,
 		normalizeTrackTitle,
 		type Track,
 		type TrackCatalog
@@ -547,7 +548,7 @@
 {#key widgetKey}
 	<iframe
 		bind:this={iframe}
-		src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(song.url)}&show_artwork=false&visual=false`}
+		src={getWidgetSrc(song)}
 		class="soundcloud-player"
 		allow="autoplay; encrypted-media"
 		title="SoundCloud preview player"
