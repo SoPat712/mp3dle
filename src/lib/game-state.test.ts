@@ -15,7 +15,8 @@ describe('game statistics', () => {
 			wins: 1,
 			streak: 1,
 			maxStreak: 1,
-			lastPlayedDate: '2026-07-20'
+			lastPlayedDate: '2026-07-20',
+			lastResult: 2
 		});
 		expect(stats.distribution).toEqual([0, 1, 0, 0, 0, 0]);
 	});
@@ -34,6 +35,7 @@ describe('game statistics', () => {
 		const winning = calculateNextStats(createEmptyStats(6), true, 1, '2026-07-20', 6);
 		const losing = calculateNextStats(winning, false, 6, '2026-07-21', 6);
 
+		expect(losing.lastResult).toBe(0);
 		expect(losing.streak).toBe(0);
 		expect(losing.wins).toBe(1);
 		expect(losing.distribution).toEqual([1, 0, 0, 0, 0, 0]);
@@ -43,6 +45,8 @@ describe('game statistics', () => {
 		const first = calculateNextStats(createEmptyStats(6), true, 1, '2026-07-20', 6);
 		const duplicate = calculateNextStats(first, false, 6, '2026-07-20', 6);
 
+		expect(first.lastResult).toBe(1);
+		expect(duplicate.lastResult).toBe(1);
 		expect(duplicate).toEqual(first);
 	});
 
@@ -67,6 +71,37 @@ describe('game statistics', () => {
 			distribution: [1, 0, 3, 0, 0, 0],
 			lastPlayedDate: undefined
 		});
+	});
+
+	it.each([0, 1, 6])('keeps a valid last result of %s', (lastResult) => {
+		const stats = sanitizeStats({ lastPlayedDate: '2026-07-20', lastResult }, 6);
+
+		expect(stats.lastResult).toBe(lastResult);
+	});
+
+	it.each([-1, 7, 1.5, '2', null, undefined])(
+		'drops an invalid last result of %s',
+		(lastResult) => {
+			const stats = sanitizeStats({ lastPlayedDate: '2026-07-20', lastResult }, 6);
+
+			expect(stats).not.toHaveProperty('lastResult');
+		}
+	);
+
+	it.each(['not-a-date', '2026-02-30', undefined])(
+		'drops the last result without a valid date: %s',
+		(lastPlayedDate) => {
+			const stats = sanitizeStats({ lastPlayedDate, lastResult: 2 }, 6);
+
+			expect(stats).not.toHaveProperty('lastResult');
+		}
+	);
+
+	it('loads old statistics without a last result', () => {
+		const saved = { ...createEmptyStats(6), lastPlayedDate: '2026-07-20' };
+
+		expect(sanitizeStats(saved, 6)).toEqual(saved);
+		expect(sanitizeStats(saved, 6)).not.toHaveProperty('lastResult');
 	});
 
 	it('restores only consistent saved games', () => {

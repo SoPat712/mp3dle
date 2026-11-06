@@ -4,7 +4,7 @@
 	import { onMount, tick } from 'svelte';
 	import Mp3dleGame from '#lib/Mp3dleGame.svelte';
 	import { loadFavorites, saveFavorites, type Favorite } from '#lib/favorites.js';
-	import { createEmptyStats, type Stats } from '#lib/game-state.js';
+	import { CLIP_LENGTHS, createEmptyStats, type Stats } from '#lib/game-state.js';
 	import AboutWindow from '#lib/retro/AboutWindow.svelte';
 	import ArtistPic from '#lib/retro/ArtistPic.svelte';
 	import FindArtist from '#lib/retro/FindArtist.svelte';
@@ -97,10 +97,10 @@
 	if (!(volume >= 0 && volume <= 100)) volume = 80;
 	let clock = '';
 	let game: Mp3dleGame | undefined;
-	let stats: Stats = createEmptyStats(6);
+	let stats: Stats = createEmptyStats(CLIP_LENGTHS.length);
 	let timeLeft = '';
 
-	$: if (!catalog) stats = createEmptyStats(6);
+	$: if (!catalog) stats = createEmptyStats(CLIP_LENGTHS.length);
 	$: nextLine = !catalog
 		? ''
 		: practiceKey

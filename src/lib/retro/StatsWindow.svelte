@@ -1,18 +1,26 @@
 <script lang="ts">
 	import type { Stats } from '#lib/game-state.js';
+	import { getLocalDateKey } from '#lib/tracks.js';
 
 	export let stats: Stats;
 	export let nextLine = '';
 	export let profileUrl = '';
 
+	$: todayResult = stats.lastPlayedDate === getLocalDateKey() ? stats.lastResult : undefined;
 	$: fails = Math.max(stats.played - stats.wins, 0);
 	$: rows = [
 		...stats.distribution.map((count, index) => ({
 			label: String(index + 1),
 			count,
-			color: '#0f6e9c'
+			color: todayResult === index + 1 ? 'var(--good)' : '#0f6e9c',
+			today: todayResult === index + 1
 		})),
-		{ label: 'X', count: fails, color: '#c43a84' }
+		{
+			label: 'X',
+			count: fails,
+			color: todayResult === 0 ? 'var(--bad)' : '#c43a84',
+			today: todayResult === 0
+		}
 	];
 	$: top = Math.max(1, ...rows.map((row) => row.count));
 	$: winPercent = stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
@@ -28,7 +36,7 @@
 	<div class="sunk chart">
 		<strong>Guess distribution</strong>
 		{#each rows as row (row.label)}
-			<div class="row">
+			<div class="row" class:today={row.today}>
 				<span class="row-label">{row.label}</span>
 				<span class="row-track">
 					<span
@@ -75,6 +83,16 @@
 	.tiles strong {
 		display: block;
 		font-size: 19px;
+	}
+
+	.tiles strong,
+	.row-count {
+		font-variant-numeric: tabular-nums;
+	}
+
+	.today .row-label,
+	.today .row-count {
+		font-weight: bold;
 	}
 
 	.chart {
