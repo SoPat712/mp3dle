@@ -21,7 +21,7 @@ fills the screen.
   en dash, em dash, or colon. `(Taylor's Version)` and `[Taylor's Version]` are ignored before
   filtering, so those re-recordings stay in.
 - Collapses duplicate normalized titles and prefers a clean, unsuffixed SoundCloud slug.
-- From 2026-11-06, also drops bracketed or dashed variants when the plain title is present,
+- Also drops bracketed or dashed variants when the plain title is present,
   such as `Soft (Unlocked)` next to `Soft` (part numbers excepted), and live-session uploads
   such as COLORS shows and Tiny Desk.
 - Offers another practice song after every completed round without changing the daily result,

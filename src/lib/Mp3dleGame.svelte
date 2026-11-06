@@ -60,10 +60,10 @@
 	const artistName = catalog.artist.username;
 	const artistKey = catalog.artist.permalink;
 	const initials = artistName.slice(0, 2).toUpperCase();
-	const guessTracks = getGuessTracks(catalog.tracks, today);
+	const guessTracks = getGuessTracks(catalog.tracks);
 	const practice = Boolean(practiceKey);
 	const song = practice
-		? getPracticeTrack(catalog.tracks, artistKey, practiceKey, today)
+		? getPracticeTrack(catalog.tracks, artistKey, practiceKey)
 		: getDailyTrack(today, catalog.tracks, artistKey);
 
 	// don't rename these, people's saved games and stats live under them
@@ -438,7 +438,7 @@
 			key = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 		} while (
 			guessTracks.length > 1 &&
-			getPracticeTrack(catalog.tracks, artistKey, key, today).slug === song.slug
+			getPracticeTrack(catalog.tracks, artistKey, key).slug === song.slug
 		);
 
 		goto(resolve(`/?artist=${encodeURIComponent(artistKey)}&practice=${key}`), { reset: false });

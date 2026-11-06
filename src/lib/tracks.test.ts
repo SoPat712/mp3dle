@@ -194,7 +194,7 @@ describe('catalog cleanup', () => {
 	});
 });
 
-describe('catalog rules from 2026-11-06', () => {
+describe('variant and live-session cleanup', () => {
 	const plain = [
 		track('Soft', 'soft'),
 		track('Walk Like This', 'walk-like-this'),
@@ -214,15 +214,9 @@ describe('catalog rules from 2026-11-06', () => {
 	];
 	const catalog = [...plain, ...variants];
 
-	it('drops variants with plain titles and live sessions from the cutover', () => {
-		expect(filterCatalogTracks(catalog, '2026-11-06')).toEqual(plain);
-		expect(filterCatalogTracks([...catalog].reverse(), '2026-11-06')).toEqual([...plain].reverse());
-	});
-
-	it('keeps the original rules before the cutover and without a date', () => {
-		expect(filterCatalogTracks(catalog)).toEqual(catalog);
-		expect(filterCatalogTracks(catalog, '2026-11-05')).toEqual(catalog);
-		expect(filterCatalogTracks(catalog, '2026-11-05')).toEqual(filterCatalogTracks(catalog));
+	it('drops variants with plain titles and live sessions', () => {
+		expect(filterCatalogTracks(catalog)).toEqual(plain);
+		expect(filterCatalogTracks([...catalog].reverse())).toEqual([...plain].reverse());
 	});
 
 	it.each([
@@ -234,22 +228,22 @@ describe('catalog rules from 2026-11-06', () => {
 	])('drops %s only when a plain title exists', (title) => {
 		const variant = track(title, 'song-unlocked');
 		const original = track('Song', 'song');
-		expect(filterCatalogTracks([variant], '2026-11-06')).toEqual([variant]);
-		expect(filterCatalogTracks([variant, original], '2026-11-06')).toEqual([original]);
+		expect(filterCatalogTracks([variant])).toEqual([variant]);
+		expect(filterCatalogTracks([variant, original])).toEqual([original]);
 	});
 
 	it.each(['Song (Part 2)', 'Song (Pt. 2)', 'Song - Pt 2'])(
 		'keeps part numbers in %s next to the plain title',
 		(title) => {
 			const catalog = [track('Song', 'song'), track(title, 'song-part-2')];
-			expect(filterCatalogTracks(catalog, '2026-11-06')).toEqual(catalog);
+			expect(filterCatalogTracks(catalog)).toEqual(catalog);
 		}
 	);
 
 	it('strips credits and rerecording labels before comparing normalized variant titles', () => {
 		const original = track('Café [feat. Somebody]', 'cafe');
 		const variant = track("Cafe (Unlocked) (Taylor's Version) (From The Vault)", 'cafe-unlocked');
-		expect(filterCatalogTracks([variant, original], '2026-11-06')).toEqual([original]);
+		expect(filterCatalogTracks([variant, original])).toEqual([original]);
 	});
 
 	it('does not treat another qualified title as a plain version', () => {
@@ -257,7 +251,7 @@ describe('catalog rules from 2026-11-06', () => {
 			track('Song (Unlocked)', 'song-unlocked'),
 			track('Song [Bonus]', 'song-bonus')
 		];
-		expect(filterCatalogTracks(catalog, '2026-11-06')).toEqual(catalog);
+		expect(filterCatalogTracks(catalog)).toEqual(catalog);
 	});
 
 	it.each([
@@ -266,43 +260,28 @@ describe('catalog rules from 2026-11-06', () => {
 		'Tiny Desk - Song',
 		'Song tiny desk concert'
 	])('removes live platform labels anywhere in %s', (title) => {
-		expect(filterCatalogTracks([track(title, 'song')], '2026-11-06')).toEqual([]);
+		expect(filterCatalogTracks([track(title, 'song')])).toEqual([]);
 	});
 
 	it('keeps ordinary colors and colours titles', () => {
 		const catalog = [track('Colors', 'colors'), track('Colours', 'colours')];
-		expect(filterCatalogTracks(catalog, '2026-11-06')).toEqual(catalog);
+		expect(filterCatalogTracks(catalog)).toEqual(catalog);
 	});
 
-	it('keeps the daily winner from the original rules before the cutover', () => {
-		const dateKey = '2026-11-05';
-		const winner = catalog.reduce((best, item) =>
-			seedrandom(`mp3dle:artist:${dateKey}:${item.slug}`)() >
-			seedrandom(`mp3dle:artist:${dateKey}:${best.slug}`)()
-				? item
-				: best
-		);
-		expect(getDailyTrack(dateKey, catalog, 'artist')).toEqual(winner);
-	});
-
-	it('never picks a dropped variant for the daily song from the cutover', () => {
-		for (const day of ['2026-11-06', '2026-11-07', '2027-01-01']) {
+	it('never picks a dropped variant for the daily song', () => {
+		for (const day of ['2026-11-03', '2026-11-05', '2026-11-06', '2027-01-01']) {
 			for (let i = 0; i < 20; i++) {
 				expect(plain).toContainEqual(getDailyTrack(day, catalog, `artist-${i}`));
 			}
 		}
 	});
 
-	it('uses the date rules for guesses and practice songs', () => {
-		expect(getGuessTracks(catalog, '2026-11-05')).toHaveLength(catalog.length);
-		expect(getGuessTracks(catalog, '2026-11-06')).toEqual(
+	it('filters guesses and practice songs', () => {
+		expect(getGuessTracks(catalog)).toEqual(
 			[...plain].sort((a, b) => a.title.localeCompare(b.title))
 		);
 		for (let i = 0; i < 20; i++) {
-			expect(plain).toContainEqual(getPracticeTrack(catalog, 'artist', `round-${i}`, '2026-11-06'));
-			expect(getPracticeTrack(catalog, 'artist', `round-${i}`, '2026-11-05')).toEqual(
-				getPracticeTrack(catalog, 'artist', `round-${i}`)
-			);
+			expect(plain).toContainEqual(getPracticeTrack(catalog, 'artist', `round-${i}`));
 		}
 	});
 });
