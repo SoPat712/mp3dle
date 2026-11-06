@@ -11,6 +11,7 @@ export type SoundCloudArtist = {
 };
 
 export type Track = {
+	id?: number;
 	title: string;
 	slug: string;
 	artist: string;
@@ -23,6 +24,12 @@ export type TrackCatalog = {
 	tracks: Track[];
 	updatedAt: string;
 };
+
+export function getWidgetSrc(track: Track) {
+	// the api url saves a permalink lookup
+	const url = track.id ? `https://api.soundcloud.com/tracks/${track.id}` : track.url;
+	return `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&show_artwork=false&visual=false&show_comments=false&hide_related=true&show_user=false&show_reposts=false&show_teaser=false&buying=false&sharing=false&download=false`;
+}
 
 // remixes, live versions and so on, we only want the originals
 const ALTERNATE_VERSION =

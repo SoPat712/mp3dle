@@ -23,6 +23,7 @@ type SoundCloudUser = {
 type SoundCloudTrack = {
 	artwork_url?: string | null;
 	duration?: number;
+	id?: number;
 	permalink_url?: string;
 	policy?: string;
 	public?: boolean;
@@ -134,6 +135,8 @@ function toTrack(item: SoundCloudTrack, artistName: string): Track | null {
 	if (url.hostname !== 'soundcloud.com' || !/^[a-z0-9-]+$/.test(slug)) return null;
 
 	return {
+		id:
+			typeof item.id === 'number' && Number.isInteger(item.id) && item.id > 0 ? item.id : undefined,
 		title: item.title.trim(),
 		slug,
 		artist: item.publisher_metadata?.artist?.trim() || item.user?.username?.trim() || artistName,

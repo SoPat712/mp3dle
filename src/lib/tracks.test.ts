@@ -5,6 +5,7 @@ import {
 	getDailyTrack,
 	getGuessTracks,
 	getPracticeTrack,
+	getWidgetSrc,
 	normalizeTrackTitle,
 	type Track
 } from '#lib/tracks.js';
@@ -15,6 +16,16 @@ const track = (title: string, slug: string): Track => ({
 	slug,
 	artist: 'Test Artist',
 	url: `https://soundcloud.com/test-artist/${slug}`
+});
+
+describe('widget source', () => {
+	it.each([123, undefined])('uses the track address and lean options with id %s', (id) => {
+		const song = { ...track('Song', 'song'), id };
+		const url = id ? `https://api.soundcloud.com/tracks/${id}` : song.url;
+		expect(getWidgetSrc(song)).toBe(
+			`https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&show_artwork=false&visual=false&show_comments=false&hide_related=true&show_user=false&show_reposts=false&show_teaser=false&buying=false&sharing=false&download=false`
+		);
+	});
 });
 
 describe('catalog cleanup', () => {
