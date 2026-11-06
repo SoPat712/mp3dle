@@ -18,7 +18,7 @@ export const load: PageLoad = async ({ fetch, url }) => {
 
 	try {
 		const response = await fetch(
-			`/api/soundcloud/catalog?artist=${encodeURIComponent(artist)}&schema=2`
+			`/api/soundcloud/catalog?artist=${encodeURIComponent(artist)}&schema=3`
 		);
 		const data = (await response.json()) as TrackCatalog | { error?: string };
 		if (!response.ok || !('artist' in data)) {
