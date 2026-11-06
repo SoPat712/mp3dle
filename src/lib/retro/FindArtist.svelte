@@ -146,6 +146,12 @@
 		outline: none;
 	}
 
+	input::-webkit-search-cancel-button,
+	input::-webkit-search-decoration {
+		-webkit-appearance: none;
+		appearance: none;
+	}
+
 	.results {
 		height: 212px;
 		overflow-y: auto;
