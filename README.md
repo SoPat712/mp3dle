@@ -5,21 +5,50 @@ correct profile, and play a daily song drawn from that artist's cleaned public c
 the game is a player app in a window, with a Start menu, readme and stats. On phones the player
 fills the screen.
 
+![Maisie Peters in the mp3dle player on try 3, with her stats and favorite artists on the desktop](docs/screenshots/desktop.png)
+
 ## What it does
 
 - Searches public SoundCloud artist profiles without requiring users to paste profile slugs.
 - Shows usernames, profile handles, upload counts, follower counts, and avatars to disambiguate
   similarly named accounts.
 - Imports every public, streamable track of at least 17 seconds from the selected profile.
-- Removes acoustic, a cappella, instrumental, karaoke, remix, rework, edit, alternate-version,
-  demo, live, stripped, sped-up, slowed, nightcore, remastered, edition, and mix variants when
-  those labels appear as a bracketed qualifier or title suffix.
+- Removes tracks with bracketed qualifiers for alternate recordings, mixes, demos, live
+  performances, commentary, interviews, previews, covers, and similar extras, including
+  acoustic, instrumental, karaoke, sped-up, slowed, and remastered versions.
+- Also removes tracks whose title suffix starts with labels such as acoustic, remix, edit,
+  version, demo, live, mix, commentary, voice memo, track by track, or interview after a hyphen,
+  en dash, em dash, or colon. `(Taylor's Version)` and `[Taylor's Version]` are ignored before
+  filtering, so those re-recordings stay in.
 - Collapses duplicate normalized titles and prefers a clean, unsuffixed SoundCloud slug.
+- From 2026-11-06, also drops bracketed or dashed variants when the plain title is present,
+  such as `Soft (Unlocked)` next to `Soft` (part numbers excepted), and live-session uploads
+  such as COLORS shows and Tiny Desk.
 - Offers another practice song after every completed round without changing the daily result,
   statistics, or streak.
 - Lets you star artists to keep them on the desktop (or in the Start menu on a phone).
+- Cycles Auto, Light, and Dark through the Start menu's Display item; Auto follows the system's
+  light/dark setting.
 - Keeps game progress, per-artist statistics, favorites, theme, and volume in the browser only.
 - Uses SoundCloud's official widget for playback.
+
+## Screenshots
+
+Track and follower counts distinguish FLO (@flolikethis) from FloFilz, MorFlo Records and Auntie Flo in a search for "flo".
+
+![Find Artist search for flo, showing FLO and similarly named profiles with track and follower counts](docs/screenshots/find-artist.png)
+
+Rex Orange County's "Pluto Projector" is solved on the second try in a dark-mode practice round that does not count toward stats.
+
+![Rex Orange County practice round for Pluto Projector, solved on try 2 in dark mode](docs/screenshots/solved-dark.png)
+
+The Start menu lists Maisie Peters, Taylor Swift, Rex Orange County, FLO and ADÉLA with remove buttons, plus the Display setting.
+
+![Dark-mode Start menu with five favorite artists, a remove button beside each, and the Display setting](docs/screenshots/start-menu-dark.png)
+
+The phone player fills the screen, with ADÉLA's daily round on the left and a solved FLO practice round on the right.
+
+<p><img src="docs/screenshots/phone-light.png" width="300" alt="ADÉLA's daily song after one wrong guess in light mode, with Start, Player, Stats and Help on the phone taskbar"> <img src="docs/screenshots/phone-dark.png" width="300" alt="FLO practice round solved on the second try in dark mode, with Start, Player, Stats and Help on the phone taskbar"></p>
 
 ## Privacy and limitations
 
