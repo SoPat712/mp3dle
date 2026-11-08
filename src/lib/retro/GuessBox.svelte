@@ -62,8 +62,11 @@
 		else if (event.key === 'ArrowUp') arrow(-1);
 		else if (event.key === 'Escape') open = false;
 		else if (event.key === 'Enter') {
-			if (suggestions[active]) choose(suggestions[active], true);
-			else onEnter();
+			// a held enter key repeats, and that shouldn't keep guessing
+			if (!event.repeat) {
+				if (suggestions[active]) choose(suggestions[active], true);
+				else onEnter();
+			}
 		} else return;
 		event.preventDefault();
 	}

@@ -581,6 +581,7 @@
 					{practiceKey}
 					{volume}
 					{mobile}
+					switching={catalogPending || Boolean(chosenArtist)}
 					favorite={favorites.some((item) => item.permalink === catalog?.artist.permalink)}
 					onToggleFavorite={toggleFavorite}
 					visible={shown.includes('player')}

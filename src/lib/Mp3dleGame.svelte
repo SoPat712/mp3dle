@@ -52,9 +52,12 @@
 	export let onNeedFinish: () => void = () => {};
 	export let favorite = false;
 	export let onToggleFavorite: () => void = () => {};
+	// another artist or round is loading in, this one is on its way out
+	export let switching = false;
 
 	const maxTries = CLIP_LENGTHS.length;
 	const CANT_PLAY = "This song can't play in this browser.";
+	const PRESS_GAP = 400; // ms, so a double click or a held key only counts once
 
 	const today = getLocalDateKey();
 	const artistName = catalog.artist.username;
@@ -98,6 +101,8 @@
 	let picked: Track | null = null;
 	let note = '';
 	let statusMessage = '';
+	let lastPress = -Infinity;
+	let destroyed = false;
 
 	let loadTimer: ReturnType<typeof setTimeout>;
 	let stallTimer: ReturnType<typeof setTimeout>;
@@ -131,6 +136,9 @@
 
 	$: widget?.setVolume(volume);
 
+	// don't keep playing over the loading bar
+	$: if (switching) pause();
+
 	function getStatus(
 		error: string,
 		loading: boolean,
@@ -162,6 +170,8 @@
 	});
 
 	onDestroy(() => {
+		destroyed = true;
+		widget?.pause();
 		clearTimeout(loadTimer);
 		clearTimeout(stallTimer);
 		clearTimeout(messageTimer);
@@ -191,11 +201,11 @@
 
 		try {
 			await loadWidgetScript();
-			if (key !== widgetKey) return;
+			if (destroyed || key !== widgetKey) return;
 			widget = window.SC!.Widget(iframe);
 			listenToWidget(widget, window.SC!.Widget.Events);
 		} catch (cause) {
-			if (key !== widgetKey) return;
+			if (destroyed || key !== widgetKey) return;
 			clearTimeout(loadTimer);
 			loading = false;
 			wantPlay = false;
@@ -228,15 +238,17 @@
 
 	function listenToWidget(widget: SoundCloudWidget, events: Record<string, string>) {
 		const key = widgetKey;
+		// a retry or a new artist replaced this widget, its events are old news
+		const stale = () => destroyed || key !== widgetKey;
 		widget.bind(events.READY, () => {
-			if (key !== widgetKey) return;
+			if (stale()) return;
 			clearTimeout(loadTimer);
 			widget.setVolume(volume);
 			// safari refuses the first play if the song isn't loaded yet, even on a real click.
 			// seeking loads it without making any sound
 			widget.seekTo(0);
 			widget.getDuration((length) => {
-				if (key !== widgetKey) return;
+				if (stale()) return;
 				songLength = length;
 				loading = false;
 				if (!(length > 0)) {
@@ -245,20 +257,20 @@
 				}
 			});
 			widget.getCurrentSound((sound) => {
-				if (key !== widgetKey) return;
+				if (stale()) return;
 				if (sound?.artwork_url) artwork = sound.artwork_url;
 			});
 		});
 
 		// that seek fires a play event too, so wait until someone has actually pressed play
 		widget.bind(events.PLAY, () => {
-			if (key !== widgetKey) return;
+			if (stale()) return;
 			heardPlay = true;
 			if (pressedPlay && wantPlay) playing = true;
 		});
 
 		widget.bind(events.PAUSE, () => {
-			if (key !== widgetKey) return;
+			if (stale()) return;
 			playing = false;
 			// we didn't pause it and it never got going, so the browser blocked it.
 			// pressing again works. if it happens twice, let the 15 seconds run out.
@@ -271,14 +283,14 @@
 		});
 
 		widget.bind(events.FINISH, () => {
-			if (key !== widgetKey) return;
+			if (stale()) return;
 			wantPlay = false;
 			playing = false;
 			position = gameOver ? songLength : clipSeconds * 1000;
 		});
 
 		widget.bind(events.PLAY_PROGRESS, (event) => {
-			if (key !== widgetKey || !event || seeking) return;
+			if (stale() || !event || seeking) return;
 			// only once the position really moves do we know the audio works
 			if (wantPlay && !playing && event.currentPosition > startedFrom + 100) playing = true;
 
@@ -295,7 +307,7 @@
 		});
 
 		widget.bind(events.ERROR, () => {
-			if (key !== widgetKey) return;
+			if (stale()) return;
 			clearTimeout(loadTimer);
 			stopWaiting();
 			playing = false;
@@ -306,7 +318,7 @@
 	}
 
 	function play(fromStart: boolean) {
-		if (!widget || loading || error) return;
+		if (!widget || loading || error || switching) return;
 		if (fromStart) {
 			position = 0;
 			widget.seekTo(0);
@@ -368,8 +380,17 @@
 
 	// game stuff
 
+	// a double click or a held enter key fires a burst of presses. only the first one counts,
+	// and the burst has to stop before the next press does
+	function tooSoon() {
+		const now = performance.now();
+		const soon = now - lastPress < PRESS_GAP;
+		lastPress = now;
+		return soon;
+	}
+
 	function skip() {
-		if (gameOver || loading || error) return;
+		if (gameOver || loading || error || switching || tooSoon()) return;
 		attemptInfos = [...attemptInfos, { status: 'skip' }];
 		guessBox?.clear();
 		note = 'Skipped. Longer clip unlocked.';
@@ -380,7 +401,7 @@
 	}
 
 	function guess() {
-		if (gameOver || loading || error) return;
+		if (gameOver || loading || error || switching || tooSoon()) return;
 		if (!picked) {
 			note = 'Pick a song from the list first.';
 			return;
@@ -789,7 +810,7 @@
 			<button
 				type="button"
 				class="gloss-pink guess-button"
-				disabled={loading || Boolean(error)}
+				disabled={loading || switching || Boolean(error)}
 				on:click={guess}
 			>
 				Guess
@@ -797,7 +818,7 @@
 			<button
 				type="button"
 				class="gloss-grey skip-button"
-				disabled={loading || Boolean(error)}
+				disabled={loading || switching || Boolean(error)}
 				on:click={skip}
 			>
 				{nextExtra ? `Skip +${nextExtra}s` : "I don't know it"}
@@ -832,7 +853,7 @@
 			: gameOver
 				? 'Play the full song'
 				: `Play ${clipSeconds} second clip`}
-		disabled={loading}
+		disabled={loading || switching}
 		on:click={playKey}
 	>
 		<Icon name={playing ? 'pause' : 'play'} />
