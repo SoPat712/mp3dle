@@ -170,8 +170,8 @@
 	});
 
 	onDestroy(() => {
+		// no widget calls in here: its iframe is already gone, and soundcloud throws without it
 		destroyed = true;
-		widget?.pause();
 		clearTimeout(loadTimer);
 		clearTimeout(stallTimer);
 		clearTimeout(messageTimer);
