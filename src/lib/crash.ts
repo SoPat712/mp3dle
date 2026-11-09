@@ -12,7 +12,7 @@ type Key = Pick<KeyboardEvent, 'key' | 'metaKey' | 'ctrlKey' | 'altKey'>;
 
 // the old "press any key". tab, enter and space work the buttons, escape is the desktop,
 // and shortcuts like copy still do what they normally do
-export function isRestartKey({ key, metaKey, ctrlKey, altKey }: Key) {
+export function isAnyKey({ key, metaKey, ctrlKey, altKey }: Key) {
 	if (metaKey || ctrlKey || altKey) return false;
 	return !['Tab', 'Enter', ' ', 'Escape', 'Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].includes(
 		key

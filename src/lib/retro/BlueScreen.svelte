@@ -1,15 +1,18 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
-	import { isRestartKey } from '#lib/crash.js';
+	import { isAnyKey } from '#lib/crash.js';
 
 	export let status = 500;
 	export let message = 'Internal Error';
 
-	let restartButton: HTMLButtonElement;
+	let restartButton: HTMLButtonElement | undefined;
+	let desktopButton: HTMLButtonElement;
 
 	// the old ones ended in a memory address, this one ends in the status code
 	$: address = `0028:C0DE${String(status).padStart(4, '0')}`;
+	// a bad link just fails again on a reload, so the desktop is the only way out
+	$: badLink = status === 404;
 
 	function restart() {
 		location.reload();
@@ -21,12 +24,12 @@
 	}
 
 	function keydown(event: KeyboardEvent) {
-		if (event.key === 'Escape') desktop();
-		else if (isRestartKey(event)) restart();
+		if (event.key === 'Escape' || (badLink && isAnyKey(event))) desktop();
+		else if (isAnyKey(event)) restart();
 	}
 
 	onMount(() => {
-		restartButton.focus();
+		(restartButton ?? desktopButton).focus();
 		document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#0000aa');
 	});
 </script>
@@ -42,22 +45,33 @@
 		</p>
 		<ul>
 			<!-- one span per line, a flex row would eat the space before "to" -->
-			<li>
-				<span
-					><span class="keys">Press any key or Restart</span><span class="taps">Tap Restart</span> to
-					load mp3dle again.</span
-				>
-			</li>
-			<li>
-				<span
-					><span class="keys">Press Esc or Desktop</span><span class="taps">Tap Desktop</span> to go back
-					to an empty desktop. You will not lose any saved games or stats.</span
-				>
-			</li>
+			{#if badLink}
+				<li>
+					<span
+						><span class="keys">Press any key or Desktop</span><span class="taps">Tap Desktop</span> to
+						go to an empty desktop and pick an artist. You will not lose any saved games or stats.</span
+					>
+				</li>
+			{:else}
+				<li>
+					<span
+						><span class="keys">Press any key or Restart</span><span class="taps">Tap Restart</span> to
+						load mp3dle again.</span
+					>
+				</li>
+				<li>
+					<span
+						><span class="keys">Press Esc or Desktop</span><span class="taps">Tap Desktop</span> to go
+						back to an empty desktop. You will not lose any saved games or stats.</span
+					>
+				</li>
+			{/if}
 		</ul>
 		<div class="buttons">
-			<button bind:this={restartButton} type="button" on:click={restart}>Restart</button>
-			<button type="button" on:click={desktop}>Desktop</button>
+			{#if !badLink}
+				<button bind:this={restartButton} type="button" on:click={restart}>Restart</button>
+			{/if}
+			<button bind:this={desktopButton} type="button" on:click={desktop}>Desktop</button>
 		</div>
 		<p class="keys continue">Press any key to continue <span class="cursor">_</span></p>
 	</div>

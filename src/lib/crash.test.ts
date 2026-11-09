@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isOwnError, isRestartKey } from './crash';
+import { isOwnError, isAnyKey } from './crash';
 
 const origin = 'https://mp3dle.joshpatra.me';
 
@@ -60,7 +60,7 @@ describe('isOwnError', () => {
 	});
 });
 
-describe('isRestartKey', () => {
+describe('isAnyKey', () => {
 	const key = (key: string, mods: Partial<KeyboardEvent> = {}) => ({
 		key,
 		metaKey: false,
@@ -69,26 +69,26 @@ describe('isRestartKey', () => {
 		...mods
 	});
 
-	it('restarts on an ordinary key', () => {
-		expect(isRestartKey(key('a'))).toBe(true);
-		expect(isRestartKey(key('ArrowDown'))).toBe(true);
+	it('counts an ordinary key', () => {
+		expect(isAnyKey(key('a'))).toBe(true);
+		expect(isAnyKey(key('ArrowDown'))).toBe(true);
 	});
 
 	it('leaves tab, enter and space to the buttons', () => {
-		expect(isRestartKey(key('Tab'))).toBe(false);
-		expect(isRestartKey(key('Enter'))).toBe(false);
-		expect(isRestartKey(key(' '))).toBe(false);
+		expect(isAnyKey(key('Tab'))).toBe(false);
+		expect(isAnyKey(key('Enter'))).toBe(false);
+		expect(isAnyKey(key(' '))).toBe(false);
 	});
 
 	it('leaves escape to the desktop button', () => {
-		expect(isRestartKey(key('Escape'))).toBe(false);
+		expect(isAnyKey(key('Escape'))).toBe(false);
 	});
 
 	it('ignores modifiers on their own and shortcuts', () => {
-		expect(isRestartKey(key('Shift'))).toBe(false);
-		expect(isRestartKey(key('Meta'))).toBe(false);
-		expect(isRestartKey(key('c', { metaKey: true }))).toBe(false);
-		expect(isRestartKey(key('c', { ctrlKey: true }))).toBe(false);
-		expect(isRestartKey(key('Tab', { altKey: true }))).toBe(false);
+		expect(isAnyKey(key('Shift'))).toBe(false);
+		expect(isAnyKey(key('Meta'))).toBe(false);
+		expect(isAnyKey(key('c', { metaKey: true }))).toBe(false);
+		expect(isAnyKey(key('c', { ctrlKey: true }))).toBe(false);
+		expect(isAnyKey(key('Tab', { altKey: true }))).toBe(false);
 	});
 });
