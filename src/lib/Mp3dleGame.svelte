@@ -20,6 +20,7 @@
 		type TrackCatalog
 	} from '#lib/tracks.js';
 	import {
+		alreadyGuessed,
 		calculateNextStats,
 		CLIP_LENGTHS,
 		createEmptyStats,
@@ -57,7 +58,6 @@
 
 	const maxTries = CLIP_LENGTHS.length;
 	const CANT_PLAY = "This song can't play in this browser.";
-	const PRESS_GAP = 400; // ms, so a double click or a held key only counts once
 
 	const today = getLocalDateKey();
 	const artistName = catalog.artist.username;
@@ -101,7 +101,6 @@
 	let picked: Track | null = null;
 	let note = '';
 	let statusMessage = '';
-	let lastPress = -Infinity;
 	let destroyed = false;
 
 	let loadTimer: ReturnType<typeof setTimeout>;
@@ -380,17 +379,13 @@
 
 	// game stuff
 
-	// a double click or a held enter key fires a burst of presses. only the first one counts,
-	// and the burst has to stop before the next press does
-	function tooSoon() {
-		const now = performance.now();
-		const soon = now - lastPress < PRESS_GAP;
-		lastPress = now;
-		return soon;
+	// a held key would otherwise skip the whole game
+	function noRepeat(event: KeyboardEvent) {
+		if (event.repeat) event.preventDefault();
 	}
 
 	function skip() {
-		if (gameOver || loading || error || switching || tooSoon()) return;
+		if (gameOver || loading || error || switching) return;
 		attemptInfos = [...attemptInfos, { status: 'skip' }];
 		guessBox?.clear();
 		note = 'Skipped. Longer clip unlocked.';
@@ -401,9 +396,14 @@
 	}
 
 	function guess() {
-		if (gameOver || loading || error || switching || tooSoon()) return;
+		if (gameOver || loading || error || switching) return;
 		if (!picked) {
 			note = 'Pick a song from the list first.';
+			return;
+		}
+		if (alreadyGuessed(attemptInfos, picked.title)) {
+			note = 'Already guessed that one. Try another.';
+			guessBox?.clear();
 			return;
 		}
 
@@ -812,6 +812,7 @@
 				class="gloss-pink guess-button"
 				disabled={loading || switching || Boolean(error)}
 				on:click={guess}
+				on:keydown={noRepeat}
 			>
 				Guess
 			</button>
@@ -820,6 +821,7 @@
 				class="gloss-grey skip-button"
 				disabled={loading || switching || Boolean(error)}
 				on:click={skip}
+				on:keydown={noRepeat}
 			>
 				{nextExtra ? `Skip +${nextExtra}s` : "I don't know it"}
 			</button>

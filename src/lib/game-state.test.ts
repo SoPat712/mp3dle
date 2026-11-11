@@ -1,10 +1,33 @@
 import { describe, expect, it } from 'vitest';
 import {
+	alreadyGuessed,
 	calculateNextStats,
 	createEmptyStats,
 	parseSavedGame,
 	sanitizeStats
 } from '#lib/game-state.js';
+
+describe('duplicate guesses', () => {
+	it.each(['White Roses', 'WHITE ROSES', 'white---roses!'])(
+		'recognizes a repeated wrong title: %s',
+		(title) => {
+			expect(alreadyGuessed([{ status: 'wrong', title: 'White Roses' }], title)).toBe(true);
+		}
+	);
+
+	it('ignores skips and correct attempts', () => {
+		expect(alreadyGuessed([{ status: 'skip', title: 'White Roses' }], 'White Roses')).toBe(false);
+		expect(alreadyGuessed([{ status: 'skip' }], 'White Roses')).toBe(false);
+		expect(alreadyGuessed([{ status: 'correct', title: 'White Roses' }], 'White Roses')).toBe(
+			false
+		);
+	});
+
+	it('allows new titles', () => {
+		expect(alreadyGuessed([{ status: 'wrong', title: 'White Roses' }], 'Emotional')).toBe(false);
+		expect(alreadyGuessed([], 'White Roses')).toBe(false);
+	});
+});
 
 describe('game statistics', () => {
 	it('starts a streak with a win', () => {

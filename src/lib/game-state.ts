@@ -1,4 +1,4 @@
-import { getLocalDateKey, isValidDateKey } from '#lib/tracks.js';
+import { getLocalDateKey, isValidDateKey, normalizeTrackTitle } from '#lib/tracks.js';
 
 // seconds of song you get on each try
 export const CLIP_LENGTHS = [1, 2, 4, 7, 11, 16];
@@ -14,6 +14,14 @@ export type Stats = {
 };
 
 export type AttemptInfo = { status: 'skip' | 'wrong' | 'correct'; title?: string };
+
+export function alreadyGuessed(attempts: AttemptInfo[], title: string): boolean {
+	const normalized = normalizeTrackTitle(title);
+	return attempts.some(
+		(attempt) =>
+			attempt.status === 'wrong' && normalizeTrackTitle(attempt.title ?? '') === normalized
+	);
+}
 
 export type SavedGame = {
 	attemptInfos: AttemptInfo[];

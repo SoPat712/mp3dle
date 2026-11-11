@@ -29,6 +29,104 @@ describe('widget source', () => {
 });
 
 describe('catalog cleanup', () => {
+	it.each([' - ', ' – ', ' — '])('dedupes matching artist prefixes using %s', (separator) => {
+		const plain = { ...track('White Roses', 'white-roses'), artist: 'Charli xcx' };
+		const prefixed = {
+			...track(`Charli XCX${separator}White Roses`, '06-charli-xcx-white-roses'),
+			artist: 'charlixcx'
+		};
+
+		expect(filterCatalogTracks([prefixed, plain])).toEqual([plain]);
+		expect(filterCatalogTracks([plain, prefixed])).toEqual([plain]);
+		expect(getGuessTracks([prefixed, plain])).toEqual([plain]);
+		expect(getDailyTrack('2026-11-10', [prefixed, plain], 'charlixcx')).toEqual(plain);
+	});
+
+	it.each([
+		['Charli XCX', 'Charli xcx, Kesha'],
+		['Kesha', 'Charli xcx, Kesha'],
+		['A. G. Cook', 'A G Cook']
+	])('matches the artist prefix %s against %s', (prefix, artist) => {
+		const plain = { ...track('Silver', 'silver'), artist };
+		const prefixed = { ...track(`${prefix} - Silver`, 'artist-silver'), artist };
+
+		expect(filterCatalogTracks([prefixed, plain])).toEqual([plain]);
+		expect(filterCatalogTracks([prefixed])).toEqual([prefixed]);
+	});
+
+	it('keeps a prefix naming a different artist', () => {
+		const catalog = [
+			{ ...track('A. G. Cook - Silver', 'ag-cook-silver'), artist: 'Charli xcx' },
+			{ ...track('Silver', 'silver'), artist: 'Charli xcx' }
+		];
+
+		expect(filterCatalogTracks(catalog)).toEqual(catalog);
+	});
+
+	it('keeps a title with nothing after the artist prefix', () => {
+		const song = { ...track('Charli XCX - ', 'charli-xcx'), artist: 'charlixcx' };
+		const duplicate = { ...track('Charli XCX', 'charli-xcx-2'), artist: 'charlixcx' };
+
+		expect(filterCatalogTracks([song, duplicate])).toEqual([song]);
+	});
+
+	it('uses artist-prefixed plain titles when dropping qualified variants', () => {
+		const plain = {
+			...track('Charli XCX - White Roses', 'charli-xcx-white-roses'),
+			artist: 'Charli xcx'
+		};
+		const variant = {
+			...track('White Roses (Bonus)', 'white-roses-bonus'),
+			artist: 'Charli xcx'
+		};
+
+		expect(filterCatalogTracks([variant, plain])).toEqual([plain]);
+	});
+
+	it.each([
+		['Charli XCX - Babygirl feat. Uffie', 'Babygirl (feat. Uffie)', 'babygirl-feat-uffie'],
+		['Charli XCX - Lipgloss feat. cupcakKe', 'Lipgloss (feat. CupcakKe)', 'lipgloss-feat-cupcakke'],
+		['Charli XCX - 3am (Pull Up) feat. MØ', '3AM (Pull Up) [feat. MØ]', '3am-pull-up-feat-mo'],
+		[
+			'Charli XCX - Dreamer feat. Starrah and RAYE',
+			'Dreamer (feat. Starrah and RAYE)',
+			'dreamer-feat-starrah-and-raye'
+		],
+		['Charli XCX - Drugs feat. ABRA', 'Drugs (feat. ABRA)', 'drugs-feat-abra']
+	])('dedupes unbracketed credits in %s and %s', (prefixedTitle, title, slug) => {
+		const prefixed = { ...track(prefixedTitle, `charli-xcx-${slug}`), artist: 'charlixcx' };
+		const plain = { ...track(title, slug), artist: 'Charli xcx' };
+
+		expect(filterCatalogTracks([prefixed, plain])).toEqual([plain]);
+		expect(filterCatalogTracks([plain, prefixed])).toEqual([plain]);
+	});
+
+	it.each(['feat.', 'ft.', 'featuring', 'FEAT.', 'FT.', 'FEATURING'])(
+		'ignores trailing unbracketed %s credits when deduping',
+		(credit) => {
+			const credited = track(`Song ${credit} Somebody`, 'song');
+
+			expect(filterCatalogTracks([track('Song', 'song-2'), credited])).toEqual([credited]);
+		}
+	);
+
+	it('uses unbracketed credits as plain titles when dropping qualified variants', () => {
+		const plain = track('Song feat. Somebody', 'song');
+		const variant = track('Song (Bonus)', 'song-bonus');
+
+		expect(filterCatalogTracks([variant, plain])).toEqual([plain]);
+	});
+
+	it.each([
+		['Defeat', 'De'],
+		['Soft Feat', 'Soft'],
+		['Left Behind', 'Le']
+	])('keeps %s unchanged and distinct from %s', (title, otherTitle) => {
+		const catalog = [track(title, 'song'), track(otherTitle, 'other-song')];
+
+		expect(filterCatalogTracks(catalog)).toEqual(catalog);
+	});
+
 	it('removes alternate versions without rejecting collaborations or ordinary titles', () => {
 		const cleaned = filterCatalogTracks([
 			track('Song (Acoustic)', 'song-acoustic'),

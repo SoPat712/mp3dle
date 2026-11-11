@@ -37,7 +37,7 @@ const ALTERNATE_VERSION =
 
 const TAYLORS_VERSION = /(?:\(Taylor['’]s Version\)|\[Taylor['’]s Version\])/gi;
 const TITLE_CREDITS =
-	/\((?:(?:feat\.|ft\.|with)\s+[^)]*|from the vault)\)|\[(?:(?:feat\.|ft\.|with)\s+[^\]]*|from the vault)\]/gi;
+	/\((?:(?:feat\.|ft\.|with)\s+[^)]*|from the vault)\)|\[(?:(?:feat\.|ft\.|with)\s+[^\]]*|from the vault)\]|\s+(?:feat\.|ft\.|featuring)\s+.+$/gi;
 const TITLE_QUALIFIER = /(?:\(([^()]*)\)|\[([^\]]*)\]|(?:\s[-–—]\s|:)\s*(.+))\s*$/;
 const PART_NUMBER = /^(?:part|pt)\s+(?:\d+|[ivxlcdm]+)\b/i;
 const LIVE_SESSION = /\b(?:colou?rs\s+show|tiny\s+desk)\b/i;
@@ -95,11 +95,22 @@ export function getPracticeTrack<T extends Track>(
 	return tracks[Math.floor(roll * tracks.length)];
 }
 
+// artist prefixes only change cleanup keys, never the displayed title
+function stripArtistPrefix(track: Track) {
+	const prefix = /^(.*?) [-–—] (.+)$/.exec(track.title);
+	if (!prefix || !prefix[2].trim()) return track.title;
+	const artistKey = (name: string) => name.replace(/[^a-z0-9]/gi, '').toLowerCase();
+	const name = artistKey(prefix[1]);
+	return track.artist.split(',').some((artist) => artistKey(artist) === name)
+		? prefix[2]
+		: track.title;
+}
+
 // drops alternate versions, variants with plain titles and live sessions, then dedupes titles
 export function filterCatalogTracks<T extends Track>(catalog: T[]): T[] {
 	const plainTitles = new Set<string>();
 	for (const track of catalog) {
-		const title = track.title.replace(TAYLORS_VERSION, '');
+		const title = stripArtistPrefix(track).replace(TAYLORS_VERSION, '');
 		if (ALTERNATE_VERSION.test(title) || LIVE_SESSION.test(title)) continue;
 		const base = title.replace(TITLE_CREDITS, '').trim();
 		if (!TITLE_QUALIFIER.test(base)) plainTitles.add(normalizeTrackTitle(base));
@@ -107,7 +118,7 @@ export function filterCatalogTracks<T extends Track>(catalog: T[]): T[] {
 	const byTitle = new Map<string, T>();
 
 	for (const track of catalog) {
-		const title = track.title.replace(TAYLORS_VERSION, '');
+		const title = stripArtistPrefix(track).replace(TAYLORS_VERSION, '');
 		if (ALTERNATE_VERSION.test(title) || LIVE_SESSION.test(title)) continue;
 		// credits and re-recording labels don't make these different songs
 		const base = title.replace(TITLE_CREDITS, '').trim();
